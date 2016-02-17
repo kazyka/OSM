@@ -4,7 +4,8 @@
 #include <cswitch.h>
 #include "proc/syscall.h"
 #include "kernel/halt.h"
-#include "kernel/write.h"  // missing implementation
+#include "kernel/read.h"
+#include "kernel/write.h"
 #include "kernel/panic.h"
 #include "lib/libc.h"
 #include "kernel/assert.h"
@@ -37,7 +38,7 @@ uintptr_t syscall_entry(uintptr_t syscall, uintptr_t arg0, uintptr_t arg1, uintp
       halt_kernel();
       break;
     case SYSCALL_READ:
-      halt_kernel();
+      read_kernel((int)arg0, (void*)arg1, (int)arg2);
       break;
     case SYSCALL_WRITE:
       write_kernel((int)arg0, (const void*)arg1, (int)arg2);

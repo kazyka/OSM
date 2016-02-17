@@ -1,7 +1,5 @@
 /*
- * testing for read and write syscalls
- * int syscall_read(int filehandle, void *buffer, int length);
- * int syscall_write(int filehandle, const void *buffer, int length);
+ * testing for write syscalls
  */
 
 #include "lib.h"
