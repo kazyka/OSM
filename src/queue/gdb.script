@@ -1,0 +1,3 @@
+b bouncer.c:loop
+run < input.txt
+next
