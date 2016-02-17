@@ -13,11 +13,10 @@
 /**
  * Write from kernel.
  */
-void write_kernel(int handle, const void *buffer, int length)
+int write_kernel(int handle, const void *buffer, int length)
 {
-  handle = handle;
-  buffer = buffer;
-  length = length;
+  KERNEL_ASSERT((handle == 1)||(handle == 2));
+  KERNEL_ASSERT(length == strlen(buffer));
 
   device_t *dev;
   gcd_t *gcd;
@@ -29,4 +28,6 @@ void write_kernel(int handle, const void *buffer, int length)
   KERNEL_ASSERT(gcd != NULL);
 
   gcd->write(gcd, buffer, length);
+
+  return length;
 }
