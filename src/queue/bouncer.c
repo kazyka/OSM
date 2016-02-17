@@ -1,11 +1,11 @@
 #include <stdio.h>  // printf, scanf, stdin
 #include <ctype.h>  // isspace
+#include "queue.h"  // Queue struct
 
-// TODO: Maybe include queue.h?
+struct queue queue;
+int pri_ptr;
 
-
-static inline char
-skip_spaces() {
+static inline char skip_spaces() {
   char c;
 
   do {
@@ -15,8 +15,7 @@ skip_spaces() {
   return c;
 }
 
-static inline void
-skip_until_space() {
+static inline void skip_until_space() {
   char c;
 
   do {
@@ -24,8 +23,7 @@ skip_until_space() {
   } while (!(isspace(c) || c == EOF));
 }
 
-void
-loop() {
+void loop() {
   char op = 0;
   int pri = 0;
 
@@ -39,17 +37,31 @@ loop() {
       break;
 
     case 'p':
-      if (0) { // TODO: Try to pop an element off of the queue.
+      // Pop an element off of the queue.
+      if (queue_pop(&queue, &pri_ptr) != 0) {
         printf("!! Queue underflow.\n");
       } else {
-        printf("=> %d\n", pri);
+        printf("=> %d\n", pri_ptr);
       }
       break;
+
+    case 'e': // Manual exit command
+       return;
+       break;
+
+    case 'q': // Got annoyed of accidentally typing q instead
+              // of e so added support for both
+       return;
+       break;
 
     default:
       ungetc(op, stdin);
       if (scanf("%d", &pri) == 1) {
-        if (0) { // TODO: Try to insert the read priority into the queue.
+        // Push the object
+
+        queue_push(&queue, pri);
+        if (0) {
+          // TODO: Try to insert the read priority into the queue.
           printf("!! Queue overflow.\n");
         }
       } else {
@@ -60,20 +72,25 @@ loop() {
   }
 }
 
-void
-shutdown() {
-  // TODO: Pop everything off of the queue.
+void shutdown() {
+  // Pop everything off of the queue.
+  int pri_ptr2;
+
+  while (queue.array_size > 0){
+     queue_pop(&queue, &pri_ptr2);
+     queue.array_size = queue.array_size - 1;
+  }
 }
 
-int
-main() {
-  // TODO: Initialize the queue.
+int main() {
+  queue_init(&queue);
 
   loop();
 
   shutdown();
 
-  // TODO: Destroy the queue.
+  queue_destroy(&queue);
+
 
   return 0;
 }
