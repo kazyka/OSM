@@ -61,7 +61,8 @@ void loop() {
 
         queue_push(&queue, pri);
         if (0) {
-          // TODO: Try to insert the read priority into the queue.
+          // We can at maximum insert one element at a time.
+          // With a dynamic array, queue overflow should not occur.
           printf("!! Queue overflow.\n");
         }
       } else {
@@ -87,6 +88,8 @@ int main() {
 
   loop();
 
+  //print_stuff(&queue);
+  
   shutdown();
 
   queue_destroy(&queue);
