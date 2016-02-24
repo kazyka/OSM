@@ -1,0 +1,8 @@
+*.swp
+*~
+*.o
+*.map
+*.d
+util/tfstool
+kudos-x86_64
+kudos-mips32

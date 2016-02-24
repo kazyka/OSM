@@ -1,0 +1,5 @@
+G2 handout:
+  A (bad!) polltty implementation of G1.
+  A (bad!) test-program testing implementation of G1.
+  A statically-allocated process_table added to process.c.
+  A process_control_block_t added to process.h.
