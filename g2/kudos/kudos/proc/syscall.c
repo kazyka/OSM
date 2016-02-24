@@ -23,8 +23,8 @@ int syscall_read(char *buffer) {
   return 1;
 }
 
-int syscall_spawn(char const* filename){
-  process_id_t pid = process_spawn(filename);
+int syscall_spawn(char const* filename, char const** argv){
+  process_id_t pid = process_spawn(filename, argv);
   return pid;
 }
 
@@ -67,7 +67,7 @@ uintptr_t syscall_entry(uintptr_t syscall,
     return syscall_write((const void*)arg1, (int)arg2);
     break;
   case SYSCALL_SPAWN:
-    return syscall_spawn((char const*)arg1);
+    return syscall_spawn((char const*)arg1, (char const**)arg2);
     break;
   case SYSCALL_EXIT:
     syscall_exit((int)arg1);

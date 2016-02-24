@@ -181,23 +181,6 @@ int setup_new_process(TID_t thread,
   return 0;
 }
 
-void process_init(void)
-{
-  /* Init the entries of process_table */
-  for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
-    process_table[i].state        = PROCESS_FREE;
-    process_table[i].process_id   = i;
-  }
-}
-
-process_id_t first_free_PID(void){
-  for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
-    if (process_table[i].state == PROCESS_FREE)
-      return process_table[i].process_id;
-  }
-  // No "FREE" process available
-  return -1;
-}
 
 process_id_t process_spawn(const char *executable, const char **argv)
 {
@@ -228,6 +211,24 @@ process_id_t process_spawn(const char *executable, const char **argv)
 
   // process_table[].state = PROCESS_RUNNING
   return 0;
+}
+
+void process_init(void)
+{
+  /* Init the entries of process_table */
+  for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
+    process_table[i].state        = PROCESS_FREE;
+    process_table[i].process_id   = i;
+  }
+}
+
+process_id_t first_free_PID(void){
+  for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
+    if (process_table[i].state == PROCESS_FREE)
+      return process_table[i].process_id;
+  }
+  // No "FREE" process available
+  return -1;
 }
 
 process_id_t process_get_current_process(void){
