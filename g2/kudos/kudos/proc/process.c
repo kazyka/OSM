@@ -193,8 +193,21 @@ process_id_t process_spawn(const char *executable, const char **argv)
   int ret;
   virtaddr_t stack_top;
   process_id_t PID;
+  interrupt_status_t intr_status;
 
-  PID = process_get_current_process();
+  intr_status = _interrupt_disable();
+  spinlock_acquire(&thread_table_slock);
+
+  PID = first_free_PID();
+  if (PID == ERROR_NO_FREE_PID){
+    return -1; // error: process_table full
+  }
+  process_table[PID].state = PROCESS_RUNNING;
+  thread_get_current_thread_entry()->process_id = PID;
+
+  spinlock_release(&thread_table_slock);
+  _interrupt_set_state(intr_status);
+
   new_thread = thread_create(&process_run, PID);
 
   ret = setup_new_process(new_thread, executable, argv,
@@ -207,7 +220,6 @@ process_id_t process_spawn(const char *executable, const char **argv)
   process_table[PID].stack_top = stack_top;
 
   thread_run(new_thread);
-  // process_table[PID].state = PROCESS_RUNNING
   return 0;
 }
 
@@ -261,11 +273,11 @@ process_id_t first_free_PID(void){
   spinlock_release(&thread_table_slock);
   _interrupt_set_state(intr_status);
   // No "FREE" process available
-  return -1;
+  return ERROR_NO_FREE_PID;
 }
 
 process_id_t process_get_current_process(void){
-  return 0;
+  return thread_get_current_thread_entry()->process_id;
 }
 
 int process_join(process_id_t pid){
