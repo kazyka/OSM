@@ -26,7 +26,7 @@ extern void process_set_pagetable(pagetable_t*);
 
 process_control_block_t process_table[PROCESS_MAX_PROCESSES];
 
-spinlock_t thread_table_slock;
+spinlock_t process_table_slock;
 
 /* Return non-zero on error. */
 int setup_new_process(TID_t thread,
@@ -195,17 +195,20 @@ process_id_t process_spawn(const char *executable, const char **argv)
   process_id_t PID;
   interrupt_status_t intr_status;
 
-  intr_status = _interrupt_disable();
-  spinlock_acquire(&thread_table_slock);
-
+  kprintf("test 24\n");
   PID = first_free_PID();
+  kprintf("test 12\n");
   if (PID == ERROR_NO_FREE_PID){
     return -1; // error: process_table full
   }
+
+  intr_status = _interrupt_disable();
+  spinlock_acquire(&process_table_slock);
+
   process_table[PID].state = PROCESS_RUNNING;
   thread_get_current_thread_entry()->process_id = PID;
 
-  spinlock_release(&thread_table_slock);
+  spinlock_release(&process_table_slock);
   _interrupt_set_state(intr_status);
 
   new_thread = thread_create(&process_run, PID);
@@ -218,7 +221,7 @@ process_id_t process_spawn(const char *executable, const char **argv)
 
   process_table[PID].entry_point = entry_point;
   process_table[PID].stack_top = stack_top;
-
+  kprintf("test 0\n");
   thread_run(new_thread);
   return 0;
 }
@@ -248,6 +251,8 @@ void process_run(process_id_t PID){
 
 void process_init(void)
 {
+  spinlock_reset(&process_table_slock);
+
   /* Init the entries of process_table */
   for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
     process_table[i].state        = PROCESS_FREE;
@@ -260,17 +265,21 @@ process_id_t first_free_PID(void){
   // Ensuring mutual exclusion when acessing the process_table
   interrupt_status_t intr_status;
   process_id_t PID = -1;
+  kprintf("test 123123123\n");
   intr_status = _interrupt_disable();
-  spinlock_acquire(&thread_table_slock);
-
+  kprintf("test 11\n");
+  spinlock_acquire(&process_table_slock);
+  kprintf("test 3\n");
   for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
     if (process_table[i].state == PROCESS_FREE)
+      kprintf("test 213\n");
       PID = process_table[i].process_id;
-      spinlock_release(&thread_table_slock);
+      spinlock_release(&process_table_slock);
       _interrupt_set_state(intr_status);
       return PID;
   }
-  spinlock_release(&thread_table_slock);
+  kprintf("test 6\n");
+  spinlock_release(&process_table_slock);
   _interrupt_set_state(intr_status);
   // No "FREE" process available
   return ERROR_NO_FREE_PID;
@@ -284,21 +293,21 @@ int process_join(process_id_t pid){
   int retval;
   interrupt_status_t intr_status;
   intr_status = _interrupt_disable();
-  spinlock_acquire(&thread_table_slock);
+  spinlock_acquire(&process_table_slock);
 
   while (process_table[pid].state != PROCESS_ZOMBIE){
     sleepq_add(&process_table[pid].state);
 
-    spinlock_release(&thread_table_slock);
+    spinlock_release(&process_table_slock);
 
     thread_switch();
 
-    spinlock_acquire(&thread_table_slock);
+    spinlock_acquire(&process_table_slock);
   }
   process_table[pid].state = PROCESS_FREE;
   retval = process_table[pid].retval;
 
-  spinlock_release(&thread_table_slock);
+  spinlock_release(&process_table_slock);
   _interrupt_set_state(intr_status);
 
   return retval;
