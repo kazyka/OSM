@@ -88,7 +88,7 @@ void thread_table_init(void)
  * @return The thread ID of the created thread, or negative if
  * creation failed (thread table is full).
  */
-TID_t thread_create(void (*func)(int), uint32_t arg)
+TID_t thread_create(void (*func)(uint32_t), uint32_t arg)
 {
   static TID_t next_tid = 0;
   TID_t i, tid = -1;

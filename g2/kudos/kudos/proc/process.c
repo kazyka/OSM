@@ -188,31 +188,37 @@ int setup_new_process(TID_t thread,
 
 process_id_t process_spawn(const char *executable, const char **argv)
 {
-  TID_t my_thread;
+  TID_t new_thread;
   virtaddr_t entry_point;
   int ret;
   virtaddr_t stack_top;
   process_id_t PID;
 
   PID = process_get_current_process();
-  my_thread = thread_create(&process_run, PID);
-  ret = setup_new_process(my_thread, executable, argv,
-                          &entry_point, &stack_top);
+  new_thread = thread_create(&process_run, PID);
 
+  ret = setup_new_process(new_thread, executable, argv,
+                          &entry_point, &stack_top);
   if (ret != 0) {
     return -1; /* Something went wrong. */
   }
 
-  // process_table[].state = PROCESS_RUNNING
+  process_table[PID].entry_point = entry_point;
+  process_table[PID].stack_top = stack_top;
+
+  thread_run(new_thread);
+  // process_table[PID].state = PROCESS_RUNNING
   return 0;
 }
 
-void process_run(process_id_t pid){
+void process_run(process_id_t PID){
   TID_t my_thread;
   virtaddr_t entry_point;
   context_t user_context;
   virtaddr_t stack_top;
 
+  entry_point = process_table[PID].entry_point;
+  stack_top = process_table[PID].stack_top;
   my_thread = thread_get_current_thread();
 
   process_set_pagetable(thread_get_thread_entry(my_thread)->pagetable);
@@ -225,8 +231,6 @@ void process_run(process_id_t pid){
   _context_set_sp(&user_context, stack_top);
 
   thread_goto_userland(&user_context);
-  // might be placed wrong
-  thread_run(my_thread);
 }
 
 
