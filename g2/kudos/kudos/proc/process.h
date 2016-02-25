@@ -57,4 +57,8 @@ process_control_block_t *process_get_current_process_entry(void);
 /* Helper function to find PID of first "FREE" entry in process_table */
 process_id_t first_free_PID(void);
 
+/* Helper function to initialize a new function created in a new thread
+   with spawn */
+void process_run(process_id_t);
+
 #endif

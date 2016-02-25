@@ -9,6 +9,8 @@
 #include "kernel/assert.h"
 #include "kernel/interrupt.h"
 #include "kernel/config.h"
+#include "kernel/spinlock.h"
+#include "kernel/interrupt.h"
 #include "fs/vfs.h"
 #include "kernel/sleepq.h"
 #include "vm/memory.h"
@@ -23,6 +25,8 @@
 extern void process_set_pagetable(pagetable_t*);
 
 process_control_block_t process_table[PROCESS_MAX_PROCESSES];
+
+spinlock_t thread_table_slock;
 
 /* Return non-zero on error. */
 int setup_new_process(TID_t thread,
@@ -187,16 +191,29 @@ process_id_t process_spawn(const char *executable, const char **argv)
   TID_t my_thread;
   virtaddr_t entry_point;
   int ret;
-  context_t user_context;
   virtaddr_t stack_top;
+  process_id_t PID;
 
-  my_thread = thread_get_current_thread();
+  PID = process_get_current_process();
+  my_thread = thread_create(&process_run, PID);
   ret = setup_new_process(my_thread, executable, argv,
                           &entry_point, &stack_top);
 
   if (ret != 0) {
     return -1; /* Something went wrong. */
   }
+
+  // process_table[].state = PROCESS_RUNNING
+  return 0;
+}
+
+void process_run(process_id_t pid){
+  TID_t my_thread;
+  virtaddr_t entry_point;
+  context_t user_context;
+  virtaddr_t stack_top;
+
+  my_thread = thread_get_current_thread();
 
   process_set_pagetable(thread_get_thread_entry(my_thread)->pagetable);
 
@@ -208,10 +225,10 @@ process_id_t process_spawn(const char *executable, const char **argv)
   _context_set_sp(&user_context, stack_top);
 
   thread_goto_userland(&user_context);
-
-  // process_table[].state = PROCESS_RUNNING
-  return 0;
+  // might be placed wrong
+  thread_run(my_thread);
 }
+
 
 void process_init(void)
 {
@@ -223,10 +240,22 @@ void process_init(void)
 }
 
 process_id_t first_free_PID(void){
+
+  // Ensuring mutual exclusion when acessing the process_table
+  interrupt_status_t intr_status;
+  process_id_t PID = -1;
+  intr_status = _interrupt_disable();
+  spinlock_acquire(&thread_table_slock);
+
   for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
     if (process_table[i].state == PROCESS_FREE)
-      return process_table[i].process_id;
+      PID = process_table[i].process_id;
+      spinlock_release(&thread_table_slock);
+      _interrupt_set_state(intr_status);
+      return PID;
   }
+  spinlock_release(&thread_table_slock);
+  _interrupt_set_state(intr_status);
   // No "FREE" process available
   return -1;
 }
@@ -236,10 +265,28 @@ process_id_t process_get_current_process(void){
 }
 
 int process_join(process_id_t pid){
+  int retval;
+  interrupt_status_t intr_status;
+  intr_status = _interrupt_disable();
+  spinlock_acquire(&thread_table_slock);
+
   while (process_table[pid].state != PROCESS_ZOMBIE){
+    sleepq_add(&process_table[pid].state);
+
+    spinlock_release(&thread_table_slock);
+
+    thread_switch();
+
+    spinlock_acquire(&thread_table_slock);
   }
   process_table[pid].state = PROCESS_FREE;
-  return process_table[pid].retval;
+  retval = process_table[pid].retval;
+
+  spinlock_release(&thread_table_slock);
+  _interrupt_set_state(intr_status);
+
+  return retval;
+
 }
 
 void process_exit(int retval){
