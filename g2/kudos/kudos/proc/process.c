@@ -195,9 +195,7 @@ process_id_t process_spawn(const char *executable, const char **argv)
   process_id_t PID;
   interrupt_status_t intr_status;
 
-  kprintf("test 24\n");
   PID = first_free_PID();
-  kprintf("test 12\n");
   if (PID == ERROR_NO_FREE_PID){
     return -1; // error: process_table full
   }
@@ -221,7 +219,6 @@ process_id_t process_spawn(const char *executable, const char **argv)
 
   process_table[PID].entry_point = entry_point;
   process_table[PID].stack_top = stack_top;
-  kprintf("test 0\n");
   thread_run(new_thread);
   return 0;
 }
@@ -265,20 +262,15 @@ process_id_t first_free_PID(void){
   // Ensuring mutual exclusion when acessing the process_table
   interrupt_status_t intr_status;
   process_id_t PID = -1;
-  kprintf("test 123123123\n");
   intr_status = _interrupt_disable();
-  kprintf("test 11\n");
   spinlock_acquire(&process_table_slock);
-  kprintf("test 3\n");
   for (int i=0; i<PROCESS_MAX_PROCESSES; i++) {
     if (process_table[i].state == PROCESS_FREE)
-      kprintf("test 213\n");
       PID = process_table[i].process_id;
       spinlock_release(&process_table_slock);
       _interrupt_set_state(intr_status);
       return PID;
   }
-  kprintf("test 6\n");
   spinlock_release(&process_table_slock);
   _interrupt_set_state(intr_status);
   // No "FREE" process available
