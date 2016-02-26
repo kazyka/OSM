@@ -214,7 +214,11 @@ process_id_t process_spawn(const char *executable, const char **argv)
   ret = setup_new_process(new_thread, executable, argv,
                           &entry_point, &stack_top);
   if (ret != 0) {
-    return -1; /* Something went wrong. */
+    process_table[PID].retval = -1; /* Something went wrong. */
+    process_table[PID].entry_point = entry_point;
+    process_table[PID].stack_top = stack_top;
+    thread_run(new_thread);
+    return -1;
   }
 
   process_table[PID].entry_point = entry_point;
@@ -229,6 +233,9 @@ void process_run(process_id_t PID){
   context_t user_context;
   virtaddr_t stack_top;
 
+  if (process_table[PID].retval == -1){
+    process_exit(-1);   // something went wrong with setup_new_process
+  }
   entry_point = process_table[PID].entry_point;
   stack_top = process_table[PID].stack_top;
   my_thread = thread_get_current_thread();
@@ -310,6 +317,7 @@ void process_exit(int retval){
   retval = retval;
   process_id_t PID = process_get_current_process();
   process_table[PID].state = PROCESS_ZOMBIE;
+  process_table[PID].retval = retval;
   thread_table_t thr = *thread_get_current_thread_entry();
   vm_destroy_pagetable(thr.pagetable);
   thr.pagetable = NULL;
