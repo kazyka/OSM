@@ -61,19 +61,19 @@ uintptr_t syscall_entry(uintptr_t syscall,
     halt_kernel();
     break;
   case SYSCALL_READ:
-    return syscall_read((void*)arg1);
+    return syscall_read((void*)arg0);
     break;
   case SYSCALL_WRITE:
-    return syscall_write((const void*)arg1, (int)arg2);
+    return syscall_write((const void*)arg0, (int)arg1);
     break;
   case SYSCALL_SPAWN:
-    return syscall_spawn((char const*)arg1, (char const**)arg2);
+    return syscall_spawn((char const*)arg0, (char const**)arg1);
     break;
   case SYSCALL_EXIT:
-    syscall_exit((int)arg1);
+    syscall_exit((int)arg0);
     break;
   case SYSCALL_JOIN:
-    return syscall_join((int)arg1);
+    return syscall_join((int)arg0);
     break;
   default:
     KERNEL_PANIC("Unhandled system call\n");

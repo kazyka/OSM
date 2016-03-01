@@ -194,6 +194,7 @@ process_id_t process_spawn(const char *executable, const char **argv)
   virtaddr_t stack_top;
   process_id_t PID;
   interrupt_status_t intr_status;
+  kprintf("0\n");
 
   PID = first_free_PID();
   if (PID == ERROR_NO_FREE_PID){
@@ -214,16 +215,18 @@ process_id_t process_spawn(const char *executable, const char **argv)
   ret = setup_new_process(new_thread, executable, argv,
                           &entry_point, &stack_top);
   if (ret != 0) {
-    process_table[PID].retval = -1; /* Something went wrong. */
-    process_table[PID].entry_point = entry_point;
-    process_table[PID].stack_top = stack_top;
-    thread_run(new_thread);
+    kprintf("yolo");
+    // process_table[PID].retval = -1; /* Something went wrong. */
+    // process_table[PID].entry_point = entry_point;
+    // process_table[PID].stack_top = stack_top;
+    // thread_run(new_thread);
     return -1;
   }
 
   process_table[PID].entry_point = entry_point;
   process_table[PID].stack_top = stack_top;
   thread_run(new_thread);
+  kprintf("process_spawn end\n");
   return 0;
 }
 
@@ -233,22 +236,29 @@ void process_run(process_id_t PID){
   context_t user_context;
   virtaddr_t stack_top;
 
+  kprintf("process_run start 1\n");
   if (process_table[PID].retval == -1){
     process_exit(-1);   // something went wrong with setup_new_process
   }
+  kprintf("process_run 2\n");
   entry_point = process_table[PID].entry_point;
+  kprintf("process_run 3\n");
   stack_top = process_table[PID].stack_top;
+  kprintf("process_run 4\n");
   my_thread = thread_get_current_thread();
 
+  kprintf("process_run 5\n");
   process_set_pagetable(thread_get_thread_entry(my_thread)->pagetable);
+  kprintf("process_run 6\n");
 
-  /* Initialize the user context. (Status register is handled by
-     thread_goto_userland) */
   memoryset(&user_context, 0, sizeof(user_context));
+  kprintf("process_run 7\n");
 
   _context_set_ip(&user_context, entry_point);
+  kprintf("process_run 8\n");
   _context_set_sp(&user_context, stack_top);
 
+  kprintf("process_run 9\n");
   thread_goto_userland(&user_context);
 }
 
@@ -289,6 +299,7 @@ process_id_t process_get_current_process(void){
 }
 
 int process_join(process_id_t pid){
+  kprintf("process_join start\n");
   int retval;
   interrupt_status_t intr_status;
   intr_status = _interrupt_disable();
@@ -309,17 +320,28 @@ int process_join(process_id_t pid){
   spinlock_release(&process_table_slock);
   _interrupt_set_state(intr_status);
 
-  return retval;
+  kprintf("process_join end\n");
 
+  return retval;
 }
 
 void process_exit(int retval){
-  retval = retval;
+  kprintf("process_exit start\n");
+
+  interrupt_status_t intr_status;
+  intr_status = _interrupt_disable();
+  spinlock_acquire(&process_table_slock);
+
   process_id_t PID = process_get_current_process();
   process_table[PID].state = PROCESS_ZOMBIE;
   process_table[PID].retval = retval;
-  thread_table_t thr = *thread_get_current_thread_entry();
-  vm_destroy_pagetable(thr.pagetable);
-  thr.pagetable = NULL;
+  thread_table_t *thr = thread_get_current_thread_entry();
+  vm_destroy_pagetable(thr->pagetable);
+  thr->pagetable = NULL;
+
+  sleepq_wake(&process_table[PID].state);
+  spinlock_release(&process_table_slock);
+  _interrupt_set_state(intr_status);
+
   thread_finish();
 }
