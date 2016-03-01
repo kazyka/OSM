@@ -1,0 +1,199 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+heap                0x100             lib.mips32.o
+free_list           0x4               lib.mips32.o
+
+Discarded input sections
+
+ .reginfo       0x0000000000000000       0x18 mips32/_syscall.mips32.o
+ .MIPS.abiflags
+                0x0000000000000000       0x18 mips32/_syscall.mips32.o
+ .reginfo       0x0000000000000000       0x18 lib.mips32.o
+ .MIPS.abiflags
+                0x0000000000000000       0x18 lib.mips32.o
+ .reginfo       0x0000000000000000       0x18 rw.mips32.o
+ .MIPS.abiflags
+                0x0000000000000000       0x18 rw.mips32.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Linker script and memory map
+
+                0x0000000000001000                . = 0x1000
+
+ro_segment      0x0000000000001000     0x2e4e
+ *(.text .rodata .rodata.*)
+ .text          0x0000000000001000       0x2c mips32/crt.mips32.o
+                0x0000000000001000                _start
+                0x0000000000001020                __main
+ .text          0x000000000000102c        0xc mips32/_syscall.mips32.o
+                0x000000000000102c                _syscall
+ .text          0x0000000000001038     0x27a0 lib.mips32.o
+                0x0000000000001038                syscall_halt
+                0x000000000000107c                syscall_spawn
+                0x00000000000010cc                syscall_exit
+                0x0000000000001118                syscall_join
+                0x0000000000001160                syscall_fork
+                0x00000000000011b0                syscall_memlimit
+                0x00000000000011f8                syscall_open
+                0x0000000000001240                syscall_close
+                0x0000000000001288                syscall_read
+                0x00000000000012e4                syscall_seek
+                0x0000000000001334                syscall_write
+                0x0000000000001390                syscall_create
+                0x00000000000013e0                syscall_delete
+                0x0000000000001428                syscall_filecount
+                0x0000000000001470                syscall_file
+                0x00000000000014cc                syscall_usr_sem_open
+                0x000000000000151c                syscall_usr_sem_destroy
+                0x0000000000001564                syscall_usr_sem_procure
+                0x00000000000015ac                syscall_usr_sem_vacate
+                0x00000000000015f4                strlen
+                0x0000000000001658                strcpy
+                0x0000000000001700                strncpy
+                0x00000000000017dc                strcat
+                0x0000000000001838                strncat
+                0x000000000000192c                strcmp
+                0x0000000000001974                strncmp
+                0x0000000000001aa8                memcmp
+                0x0000000000001b84                strstr
+                0x0000000000001c28                memset
+                0x0000000000001ca4                memcpy
+                0x0000000000001d38                putc
+                0x0000000000001d7c                puts
+                0x0000000000001dc8                getc_raw
+                0x0000000000001e0c                getc
+                0x0000000000001e64                gets
+                0x0000000000001f18                readline_static
+                0x0000000000002070                readline
+                0x0000000000002ffc                printf
+                0x000000000000306c                snprintf
+                0x00000000000030d4                heap_init
+                0x0000000000003128                malloc
+                0x000000000000330c                free
+                0x000000000000350c                calloc
+                0x00000000000035c4                realloc
+                0x00000000000036e0                atoi
+ .rodata        0x00000000000037d8      0x110 lib.mips32.o
+ .text          0x00000000000038e8      0x364 rw.mips32.o
+                0x00000000000038e8                main
+ .rodata        0x0000000000003c4c      0x202 rw.mips32.o
+
+.MIPS.abiflags  0x0000000000003e50       0x18
+ .MIPS.abiflags
+                0x0000000000003e50       0x18 mips32/crt.mips32.o
+
+rw_segment      0x0000000000004000      0x104
+ *(.data .bss COMMON)
+ .data          0x0000000000004000        0x0 mips32/crt.mips32.o
+ .bss           0x0000000000004000        0x0 mips32/crt.mips32.o
+ .data          0x0000000000004000        0x0 mips32/_syscall.mips32.o
+ .bss           0x0000000000004000        0x0 mips32/_syscall.mips32.o
+ .data          0x0000000000004000        0x0 lib.mips32.o
+ .bss           0x0000000000004000        0x0 lib.mips32.o
+ COMMON         0x0000000000004000      0x104 lib.mips32.o
+                0x0000000000004000                heap
+                0x0000000000004100                free_list
+ .data          0x0000000000004104        0x0 rw.mips32.o
+ .bss           0x0000000000004104        0x0 rw.mips32.o
+                0x0000000000004104                BINARY_ENDS_HERE = .
+LOAD mips32/crt.mips32.o
+LOAD mips32/_syscall.mips32.o
+LOAD lib.mips32.o
+LOAD rw.mips32.o
+OUTPUT(rw.mips32 elf32-bigmips)
+
+.reginfo        0x0000000000000000       0x18
+ .reginfo       0x0000000000000000       0x18 mips32/crt.mips32.o
+
+.pdr            0x0000000000000000      0x6a0
+ .pdr           0x0000000000000000       0x40 mips32/crt.mips32.o
+ .pdr           0x0000000000000040       0x20 mips32/_syscall.mips32.o
+ .pdr           0x0000000000000060      0x620 lib.mips32.o
+ .pdr           0x0000000000000680       0x20 rw.mips32.o
+
+.gnu.attributes
+                0x0000000000000000       0x10
+ .gnu.attributes
+                0x0000000000000000       0x10 mips32/crt.mips32.o
+ .gnu.attributes
+                0x0000000000000010       0x10 mips32/_syscall.mips32.o
+ .gnu.attributes
+                0x0000000000000020       0x10 lib.mips32.o
+ .gnu.attributes
+                0x0000000000000030       0x10 rw.mips32.o
+
+.mdebug.abi32   0x0000000000000000        0x0
+ .mdebug.abi32  0x0000000000000000        0x0 lib.mips32.o
+ .mdebug.abi32  0x0000000000000000        0x0 rw.mips32.o
+
+.comment        0x0000000000000000       0x11
+ .comment       0x0000000000000000       0x11 lib.mips32.o
+                                         0x12 (size before relaxing)
+ .comment       0x0000000000000011       0x12 rw.mips32.o
+
+Cross Reference Table
+
+Symbol                                            File
+__main                                            mips32/crt.mips32.o
+_start                                            mips32/crt.mips32.o
+_syscall                                          mips32/_syscall.mips32.o
+                                                  lib.mips32.o
+atoi                                              lib.mips32.o
+calloc                                            lib.mips32.o
+free                                              lib.mips32.o
+free_list                                         lib.mips32.o
+getc                                              lib.mips32.o
+getc_raw                                          lib.mips32.o
+gets                                              lib.mips32.o
+heap                                              lib.mips32.o
+heap_init                                         lib.mips32.o
+main                                              rw.mips32.o
+                                                  mips32/crt.mips32.o
+malloc                                            lib.mips32.o
+memcmp                                            lib.mips32.o
+memcpy                                            lib.mips32.o
+memset                                            lib.mips32.o
+printf                                            lib.mips32.o
+                                                  rw.mips32.o
+putc                                              lib.mips32.o
+puts                                              lib.mips32.o
+readline                                          lib.mips32.o
+readline_static                                   lib.mips32.o
+realloc                                           lib.mips32.o
+snprintf                                          lib.mips32.o
+strcat                                            lib.mips32.o
+strcmp                                            lib.mips32.o
+strcpy                                            lib.mips32.o
+strlen                                            lib.mips32.o
+strncat                                           lib.mips32.o
+strncmp                                           lib.mips32.o
+strncpy                                           lib.mips32.o
+strstr                                            lib.mips32.o
+syscall_close                                     lib.mips32.o
+syscall_create                                    lib.mips32.o
+syscall_delete                                    lib.mips32.o
+syscall_exit                                      lib.mips32.o
+syscall_file                                      lib.mips32.o
+syscall_filecount                                 lib.mips32.o
+syscall_fork                                      lib.mips32.o
+syscall_halt                                      lib.mips32.o
+                                                  rw.mips32.o
+syscall_join                                      lib.mips32.o
+syscall_memlimit                                  lib.mips32.o
+syscall_open                                      lib.mips32.o
+syscall_read                                      lib.mips32.o
+                                                  rw.mips32.o
+syscall_seek                                      lib.mips32.o
+syscall_spawn                                     lib.mips32.o
+syscall_usr_sem_destroy                           lib.mips32.o
+syscall_usr_sem_open                              lib.mips32.o
+syscall_usr_sem_procure                           lib.mips32.o
+syscall_usr_sem_vacate                            lib.mips32.o
+syscall_write                                     lib.mips32.o
+                                                  rw.mips32.o
