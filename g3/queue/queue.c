@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "queue.h"
 
@@ -88,7 +89,7 @@ queue_grow(struct queue *q) {
 int
 queue_push(struct queue *q, int pri) {
   /* FIXME: Make this function thread-safe. */
-
+  printf("start-push\n");
   int retval;
 
   if (q->count >= q->size) {
@@ -101,7 +102,7 @@ queue_push(struct queue *q, int pri) {
 
   queue_heap_up(q->root, q->count);
   q->count++;
-
+  printf("end-push\n");
   return 0;
 }
 
@@ -109,16 +110,21 @@ int
 queue_pop(struct queue *q, int *pri_ptr) {
   /* FIXME: Make this function thread-safe.  Also, if the queue is empty on pop,
      block until something is pushed. */
-
+  printf("start-pop\n");
   if (q->count == 0) {
     return QUEUE_UNDERFLOW;
   }
+  printf("1pop\n");
   *pri_ptr = q->root->pri;
 
+  printf("2pop\n");
   q->count--;
+  printf("3pop\n");
   q->next--;
 
+  printf("4pop\n");
   exchange(q->root, q->next);
+  printf("5pop\n");
   queue_heap_down(q->root, q->count, 0);
 
   return 0;
