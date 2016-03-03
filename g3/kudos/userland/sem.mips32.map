@@ -26,7 +26,7 @@ Linker script and memory map
 
                 0x0000000000001000                . = 0x1000
 
-ro_segment      0x0000000000001000     0x2931
+ro_segment      0x0000000000001000     0x2945
  *(.text .rodata .rodata.*)
  .text          0x0000000000001000       0x2c mips32/crt.mips32.o
                 0x0000000000001000                _start
@@ -80,13 +80,13 @@ ro_segment      0x0000000000001000     0x2931
                 0x00000000000035c4                realloc
                 0x00000000000036e0                atoi
  .rodata        0x00000000000037d8      0x110 lib.mips32.o
- .text          0x00000000000038e8       0x40 sem.mips32.o
+ .text          0x00000000000038e8       0x54 sem.mips32.o
                 0x00000000000038e8                main
- .rodata        0x0000000000003928        0x9 sem.mips32.o
+ .rodata        0x000000000000393c        0x9 sem.mips32.o
 
-.MIPS.abiflags  0x0000000000003938       0x18
+.MIPS.abiflags  0x0000000000003948       0x18
  .MIPS.abiflags
-                0x0000000000003938       0x18 mips32/crt.mips32.o
+                0x0000000000003948       0x18 mips32/crt.mips32.o
 
 rw_segment      0x0000000000004000      0x104
  *(.data .bss COMMON)
@@ -189,6 +189,7 @@ syscall_read                                      lib.mips32.o
 syscall_seek                                      lib.mips32.o
 syscall_spawn                                     lib.mips32.o
 syscall_usr_sem_destroy                           lib.mips32.o
+                                                  sem.mips32.o
 syscall_usr_sem_open                              lib.mips32.o
                                                   sem.mips32.o
 syscall_usr_sem_procure                           lib.mips32.o
