@@ -4,6 +4,7 @@ Common symbol       size              file
 
 interrupt_stacks    0x10              kernel/mips32/interrupt.mips32.o
 thread_table        0x800             kernel/thread.mips32.o
+sem_table_slock     0x4               proc/usr_sem.mips32.o
 process_entry_points
                     0x80              proc/process.mips32.o
 scheduler_current_thread
@@ -65,6 +66,9 @@ Discarded input sections
  .reginfo       0x0000000000000000       0x18 proc/process.mips32.o
  .MIPS.abiflags
                 0x0000000000000000       0x18 proc/process.mips32.o
+ .reginfo       0x0000000000000000       0x18 proc/usr_sem.mips32.o
+ .MIPS.abiflags
+                0x0000000000000000       0x18 proc/usr_sem.mips32.o
  .reginfo       0x0000000000000000       0x18 fs/vfs.mips32.o
  .MIPS.abiflags
                 0x0000000000000000       0x18 fs/vfs.mips32.o
@@ -171,7 +175,7 @@ Linker script and memory map
 
                 0x0000000080010000                . = 0x80010000
 
-.text           0x0000000080010000     0x9c4c
+.text           0x0000000080010000     0x9e54
  *(.text)
  .text          0x0000000080010000      0x258 init/common.mips32.o
                 0x0000000080010000                init_startup_fallback
@@ -248,387 +252,396 @@ Linker script and memory map
                 0x000000008001292c                timer_set_ticks
  .text          0x0000000080012960      0x374 proc/elf.mips32.o
                 0x0000000080012960                elf_parse_header
- .text          0x0000000080012cd4       0xd4 proc/syscall.mips32.o
+ .text          0x0000000080012cd4      0x164 proc/syscall.mips32.o
                 0x0000000080012cd4                syscall_entry
- .text          0x0000000080012da8      0x88c proc/process.mips32.o
-                0x0000000080012da8                process_run
-                0x0000000080012e28                setup_new_process
-                0x0000000080013300                process_start
-                0x00000000800133bc                process_spawn_silly
-                0x0000000080013444                process_exit_silly
-                0x0000000080013484                process_read
-                0x0000000080013558                process_write
- .text          0x0000000080013634     0x1538 fs/vfs.mips32.o
-                0x00000000800138d8                vfs_init
-                0x00000000800139c4                vfs_deinit
-                0x0000000080013b34                vfs_mount
-                0x0000000080013cc8                vfs_mount_fs
-                0x0000000080013dc4                vfs_mount_all
-                0x0000000080013e4c                vfs_unmount
-                0x0000000080013fc0                vfs_open
-                0x00000000800141b0                vfs_close
-                0x0000000080014240                vfs_seek
-                0x00000000800142e8                vfs_read
-                0x00000000800143c8                vfs_write
-                0x00000000800144a8                vfs_create
-                0x00000000800145f0                vfs_remove
-                0x0000000080014704                vfs_getfree
-                0x00000000800147fc                vfs_filecount
-                0x0000000080014980                vfs_file
- .text          0x0000000080014b6c     0x13cc fs/tfs.mips32.o
-                0x0000000080014b6c                tfs_close
-                0x0000000080014b74                tfs_unmount
-                0x0000000080014bcc                tfs_open
-                0x0000000080014cf8                tfs_filecount
-                0x0000000080014dd0                tfs_file
-                0x0000000080014f00                tfs_create
-                0x00000000800152ac                tfs_remove
-                0x0000000080015540                tfs_read
-                0x000000008001583c                tfs_write
-                0x0000000080015c28                tfs_getfree
-                0x0000000080015d00                tfs_init
- .text          0x0000000080015f38      0x49c fs/filesystems.mips32.o
-                0x0000000080015f38                get_partition
-                0x000000008001602c                read_extended_partition_table
-                0x00000000800161bc                filesystems_try_all
- .text          0x00000000800163d4       0xac lib/gcc/divdi3.mips32.o
-                0x00000000800163d4                __divdi3
- .text          0x0000000080016480      0x51c lib/gcc/qdivrem.mips32.o
-                0x00000000800164dc                __qdivrem
- .text          0x000000008001699c       0x24 lib/gcc/udivdi3.mips32.o
-                0x000000008001699c                __udivdi3
- .text          0x00000000800169c0       0x2c lib/gcc/umoddi3.mips32.o
-                0x00000000800169c0                __umoddi3
- .text          0x00000000800169ec       0x60 init/mips32/_boot.mips32.o
-                0x00000000800169ec                _start
- .text          0x0000000080016a4c      0x350 kernel/mips32/_cswitch.mips32.o
-                0x0000000080016a4c                _cswitch_vector_code
-                0x0000000080016a6c                _cswitch_switch
-                0x0000000080016d74                _cswitch_to_userland
- .text          0x0000000080016d9c      0x120 kernel/mips32/_interrupt.mips32.o
-                0x0000000080016d9c                _interrupt_disable
-                0x0000000080016db8                _interrupt_enable
-                0x0000000080016dd0                _interrupt_set_state
-                0x0000000080016df4                _interrupt_get_state
-                0x0000000080016e00                _interrupt_yield
-                0x0000000080016e18                _interrupt_clear_sw
-                0x0000000080016e30                _interrupt_clear_sw0
-                0x0000000080016e48                _interrupt_clear_sw1
-                0x0000000080016e60                _interrupt_clear_bootstrap
-                0x0000000080016e7c                _interrupt_getcpu
-                0x0000000080016e8c                _interrupt_clear_EXL
-                0x0000000080016ea4                _interrupt_set_EXL
- .text          0x0000000080016ebc       0x30 kernel/mips32/_spinlock.mips32.o
-                0x0000000080016ebc                spinlock_reset
-                0x0000000080016ebc                spinlock_release
-                0x0000000080016ec8                spinlock_acquire
- .text          0x0000000080016eec        0xc kernel/mips32/idle.mips32.o
-                0x0000000080016eec                _idle_thread_wait_loop
- .text          0x0000000080016ef8      0x15c vm/mips32/_tlb.mips32.o
-                0x0000000080016ef8                _tlb_get_exception_state
-                0x0000000080016f1c                _tlb_set_asid
-                0x0000000080016f3c                _tlb_get_maxindex
-                0x0000000080016f50                _tlb_probe
-                0x0000000080016f68                _tlb_read
-                0x0000000080016fcc                _tlb_write
-                0x0000000080017030                _tlb_write_random
- .text          0x0000000080017054       0x4c lib/mips32/rand.mips32.o
-                0x0000000080017054                _set_rand_seed
-                0x0000000080017064                _get_rand
- .text          0x00000000800170a0       0x14 drivers/mips32/_timer.mips32.o
-                0x00000000800170a0                _timer_set_ticks
- .text          0x00000000800170b4      0x100 vm/memory.mips32.o
-                0x00000000800170b4                vm_memwrite
- .text          0x00000000800171b4      0x278 init/mips32/main.mips32.o
-                0x00000000800171b4                init
- .text          0x000000008001742c       0x54 kernel/mips32/cswitch.mips32.o
-                0x000000008001742c                _context_init
-                0x0000000080017450                _context_enter_userland
-                0x0000000080017464                _context_set_ip
-                0x000000008001746c                _context_enable_ints
-                0x0000000080017478                _context_set_sp
- .text          0x0000000080017480      0x37c kernel/mips32/interrupt.mips32.o
-                0x0000000080017480                interrupt_init
-                0x00000000800175a4                interrupt_register
-                0x0000000080017674                interrupt_handle
-                0x00000000800177c0                _interrupt_is_disabled
- .text          0x00000000800177fc      0x290 kernel/mips32/exception.mips32.o
-                0x0000000080017834                kernel_exception_handle
- .text          0x0000000080017a8c      0x604 vm/mips32/mm_virt.mips32.o
-                0x0000000080017a8c                vm_init
-                0x0000000080017aa8                vm_create_pagetable
-                0x0000000080017af4                vm_destroy_pagetable
-                0x0000000080017b04                vm_map
-                0x0000000080017e3c                vm_unmap
-                0x0000000080017e44                vm_getmap
-                0x0000000080017ef4                vm_set_dirty
- .text          0x0000000080018090       0xc8 vm/mips32/tlb.mips32.o
-                0x0000000080018090                tlb_modified_exception
-                0x00000000800180a8                tlb_load_exception
-                0x00000000800180c0                tlb_store_exception
-                0x00000000800180d8                tlb_fill
- .text          0x0000000080018158      0x37c vm/mips32/mm_phys.mips32.o
-                0x0000000080018158                physmem_get_size
-                0x00000000800181d8                physmem_get_reserved_size
-                0x000000008001825c                physmem_init
-                0x0000000080018330                physmem_allocblock
-                0x00000000800183fc                physmem_freeblock
- .text          0x00000000800184d4      0x5b0 drivers/mips32/disk.mips32.o
-                0x0000000080018958                disk_init
- .text          0x0000000080018a84      0x478 drivers/mips32/metadev.mips32.o
-                0x0000000080018b04                cpustatus_interrupt_handle
-                0x0000000080018b90                rtc_init
-                0x0000000080018c00                rtc_get_msec
-                0x0000000080018c18                rtc_get_clockspeed
-                0x0000000080018c30                meminfo_init
-                0x0000000080018ca0                meminfo_get_pages
-                0x0000000080018cb8                cpustatus_init
-                0x0000000080018d58                cpustatus_count
-                0x0000000080018da0                cpustatus_generate_irq
-                0x0000000080018e20                shutdown_init
-                0x0000000080018e90                shutdown
- .text          0x0000000080018efc       0xe8 drivers/mips32/polltty.mips32.o
-                0x0000000080018efc                polltty_init
-                0x0000000080018f5c                polltty_getchar
-                0x0000000080018f9c                polltty_putchar
- .text          0x0000000080018fe4      0x7dc drivers/mips32/tty.mips32.o
-                0x000000008001938c                tty_interrupt_handle
-                0x0000000080019604                tty_init
- .text          0x00000000800197c0      0x1dc drivers/mips32/device.mips32.o
-                0x00000000800197c0                device_init
-                0x000000008001993c                device_get
- .text          0x000000008001999c        0x0 drivers/mips32/drivers.mips32.o
- .text          0x000000008001999c      0x234 proc/mips32/exception.mips32.o
-                0x000000008001999c                user_exception_handle
- .text          0x0000000080019bd0       0x48 proc/mips32/_syscall.mips32.o
-                0x0000000080019bd0                syscall_handle
- .text          0x0000000080019c18       0x34 proc/mips32/_proc.mips32.o
-                0x0000000080019c18                process_set_pagetable
+ .text          0x0000000080012e38      0x88c proc/process.mips32.o
+                0x0000000080012e38                process_run
+                0x0000000080012eb8                setup_new_process
+                0x0000000080013390                process_start
+                0x000000008001344c                process_spawn_silly
+                0x00000000800134d4                process_exit_silly
+                0x0000000080013514                process_read
+                0x00000000800135e8                process_write
+ .text          0x00000000800136c4      0x178 proc/usr_sem.mips32.o
+                0x00000000800136c4                usr_sem_open
+                0x00000000800137dc                usr_sem_destroy
+                0x0000000080013804                usr_sem_procure
+                0x0000000080013828                usr_sem_vacate
+ .text          0x000000008001383c     0x1538 fs/vfs.mips32.o
+                0x0000000080013ae0                vfs_init
+                0x0000000080013bcc                vfs_deinit
+                0x0000000080013d3c                vfs_mount
+                0x0000000080013ed0                vfs_mount_fs
+                0x0000000080013fcc                vfs_mount_all
+                0x0000000080014054                vfs_unmount
+                0x00000000800141c8                vfs_open
+                0x00000000800143b8                vfs_close
+                0x0000000080014448                vfs_seek
+                0x00000000800144f0                vfs_read
+                0x00000000800145d0                vfs_write
+                0x00000000800146b0                vfs_create
+                0x00000000800147f8                vfs_remove
+                0x000000008001490c                vfs_getfree
+                0x0000000080014a04                vfs_filecount
+                0x0000000080014b88                vfs_file
+ .text          0x0000000080014d74     0x13cc fs/tfs.mips32.o
+                0x0000000080014d74                tfs_close
+                0x0000000080014d7c                tfs_unmount
+                0x0000000080014dd4                tfs_open
+                0x0000000080014f00                tfs_filecount
+                0x0000000080014fd8                tfs_file
+                0x0000000080015108                tfs_create
+                0x00000000800154b4                tfs_remove
+                0x0000000080015748                tfs_read
+                0x0000000080015a44                tfs_write
+                0x0000000080015e30                tfs_getfree
+                0x0000000080015f08                tfs_init
+ .text          0x0000000080016140      0x49c fs/filesystems.mips32.o
+                0x0000000080016140                get_partition
+                0x0000000080016234                read_extended_partition_table
+                0x00000000800163c4                filesystems_try_all
+ .text          0x00000000800165dc       0xac lib/gcc/divdi3.mips32.o
+                0x00000000800165dc                __divdi3
+ .text          0x0000000080016688      0x51c lib/gcc/qdivrem.mips32.o
+                0x00000000800166e4                __qdivrem
+ .text          0x0000000080016ba4       0x24 lib/gcc/udivdi3.mips32.o
+                0x0000000080016ba4                __udivdi3
+ .text          0x0000000080016bc8       0x2c lib/gcc/umoddi3.mips32.o
+                0x0000000080016bc8                __umoddi3
+ .text          0x0000000080016bf4       0x60 init/mips32/_boot.mips32.o
+                0x0000000080016bf4                _start
+ .text          0x0000000080016c54      0x350 kernel/mips32/_cswitch.mips32.o
+                0x0000000080016c54                _cswitch_vector_code
+                0x0000000080016c74                _cswitch_switch
+                0x0000000080016f7c                _cswitch_to_userland
+ .text          0x0000000080016fa4      0x120 kernel/mips32/_interrupt.mips32.o
+                0x0000000080016fa4                _interrupt_disable
+                0x0000000080016fc0                _interrupt_enable
+                0x0000000080016fd8                _interrupt_set_state
+                0x0000000080016ffc                _interrupt_get_state
+                0x0000000080017008                _interrupt_yield
+                0x0000000080017020                _interrupt_clear_sw
+                0x0000000080017038                _interrupt_clear_sw0
+                0x0000000080017050                _interrupt_clear_sw1
+                0x0000000080017068                _interrupt_clear_bootstrap
+                0x0000000080017084                _interrupt_getcpu
+                0x0000000080017094                _interrupt_clear_EXL
+                0x00000000800170ac                _interrupt_set_EXL
+ .text          0x00000000800170c4       0x30 kernel/mips32/_spinlock.mips32.o
+                0x00000000800170c4                spinlock_reset
+                0x00000000800170c4                spinlock_release
+                0x00000000800170d0                spinlock_acquire
+ .text          0x00000000800170f4        0xc kernel/mips32/idle.mips32.o
+                0x00000000800170f4                _idle_thread_wait_loop
+ .text          0x0000000080017100      0x15c vm/mips32/_tlb.mips32.o
+                0x0000000080017100                _tlb_get_exception_state
+                0x0000000080017124                _tlb_set_asid
+                0x0000000080017144                _tlb_get_maxindex
+                0x0000000080017158                _tlb_probe
+                0x0000000080017170                _tlb_read
+                0x00000000800171d4                _tlb_write
+                0x0000000080017238                _tlb_write_random
+ .text          0x000000008001725c       0x4c lib/mips32/rand.mips32.o
+                0x000000008001725c                _set_rand_seed
+                0x000000008001726c                _get_rand
+ .text          0x00000000800172a8       0x14 drivers/mips32/_timer.mips32.o
+                0x00000000800172a8                _timer_set_ticks
+ .text          0x00000000800172bc      0x100 vm/memory.mips32.o
+                0x00000000800172bc                vm_memwrite
+ .text          0x00000000800173bc      0x278 init/mips32/main.mips32.o
+                0x00000000800173bc                init
+ .text          0x0000000080017634       0x54 kernel/mips32/cswitch.mips32.o
+                0x0000000080017634                _context_init
+                0x0000000080017658                _context_enter_userland
+                0x000000008001766c                _context_set_ip
+                0x0000000080017674                _context_enable_ints
+                0x0000000080017680                _context_set_sp
+ .text          0x0000000080017688      0x37c kernel/mips32/interrupt.mips32.o
+                0x0000000080017688                interrupt_init
+                0x00000000800177ac                interrupt_register
+                0x000000008001787c                interrupt_handle
+                0x00000000800179c8                _interrupt_is_disabled
+ .text          0x0000000080017a04      0x290 kernel/mips32/exception.mips32.o
+                0x0000000080017a3c                kernel_exception_handle
+ .text          0x0000000080017c94      0x604 vm/mips32/mm_virt.mips32.o
+                0x0000000080017c94                vm_init
+                0x0000000080017cb0                vm_create_pagetable
+                0x0000000080017cfc                vm_destroy_pagetable
+                0x0000000080017d0c                vm_map
+                0x0000000080018044                vm_unmap
+                0x000000008001804c                vm_getmap
+                0x00000000800180fc                vm_set_dirty
+ .text          0x0000000080018298       0xc8 vm/mips32/tlb.mips32.o
+                0x0000000080018298                tlb_modified_exception
+                0x00000000800182b0                tlb_load_exception
+                0x00000000800182c8                tlb_store_exception
+                0x00000000800182e0                tlb_fill
+ .text          0x0000000080018360      0x37c vm/mips32/mm_phys.mips32.o
+                0x0000000080018360                physmem_get_size
+                0x00000000800183e0                physmem_get_reserved_size
+                0x0000000080018464                physmem_init
+                0x0000000080018538                physmem_allocblock
+                0x0000000080018604                physmem_freeblock
+ .text          0x00000000800186dc      0x5b0 drivers/mips32/disk.mips32.o
+                0x0000000080018b60                disk_init
+ .text          0x0000000080018c8c      0x478 drivers/mips32/metadev.mips32.o
+                0x0000000080018d0c                cpustatus_interrupt_handle
+                0x0000000080018d98                rtc_init
+                0x0000000080018e08                rtc_get_msec
+                0x0000000080018e20                rtc_get_clockspeed
+                0x0000000080018e38                meminfo_init
+                0x0000000080018ea8                meminfo_get_pages
+                0x0000000080018ec0                cpustatus_init
+                0x0000000080018f60                cpustatus_count
+                0x0000000080018fa8                cpustatus_generate_irq
+                0x0000000080019028                shutdown_init
+                0x0000000080019098                shutdown
+ .text          0x0000000080019104       0xe8 drivers/mips32/polltty.mips32.o
+                0x0000000080019104                polltty_init
+                0x0000000080019164                polltty_getchar
+                0x00000000800191a4                polltty_putchar
+ .text          0x00000000800191ec      0x7dc drivers/mips32/tty.mips32.o
+                0x0000000080019594                tty_interrupt_handle
+                0x000000008001980c                tty_init
+ .text          0x00000000800199c8      0x1dc drivers/mips32/device.mips32.o
+                0x00000000800199c8                device_init
+                0x0000000080019b44                device_get
+ .text          0x0000000080019ba4        0x0 drivers/mips32/drivers.mips32.o
+ .text          0x0000000080019ba4      0x234 proc/mips32/exception.mips32.o
+                0x0000000080019ba4                user_exception_handle
+ .text          0x0000000080019dd8       0x48 proc/mips32/_syscall.mips32.o
+                0x0000000080019dd8                syscall_handle
+ .text          0x0000000080019e20       0x34 proc/mips32/_proc.mips32.o
+                0x0000000080019e20                process_set_pagetable
 
-.rodata         0x0000000080019c4c     0x1694
+.rodata         0x0000000080019e54     0x1694
  *(.rodata .rodata.*)
  .rodata.str1.4
-                0x0000000080019c4c      0x172 init/common.mips32.o
- *fill*         0x0000000080019dbe        0x2 
+                0x0000000080019e54      0x172 init/common.mips32.o
+ *fill*         0x0000000080019fc6        0x2 
  .rodata.str1.4
-                0x0000000080019dc0       0x26 kernel/panic.mips32.o
- *fill*         0x0000000080019de6        0x2 
+                0x0000000080019fc8       0x26 kernel/panic.mips32.o
+ *fill*         0x0000000080019fee        0x2 
  .rodata.str1.4
-                0x0000000080019de8       0x6b kernel/thread.mips32.o
+                0x0000000080019ff0       0x6b kernel/thread.mips32.o
                                          0x7f (size before relaxing)
- *fill*         0x0000000080019e53        0x1 
+ *fill*         0x000000008001a05b        0x1 
  .rodata.str1.4
-                0x0000000080019e54       0x13 kernel/scheduler.mips32.o
+                0x000000008001a05c       0x13 kernel/scheduler.mips32.o
                                          0x27 (size before relaxing)
- *fill*         0x0000000080019e67        0x1 
+ *fill*         0x000000008001a06f        0x1 
  .rodata.str1.4
-                0x0000000080019e68       0x10 kernel/sleepq.mips32.o
+                0x000000008001a070       0x10 kernel/sleepq.mips32.o
                                          0x24 (size before relaxing)
  .rodata.str1.4
-                0x0000000080019e78       0x13 kernel/semaphore.mips32.o
+                0x000000008001a080       0x13 kernel/semaphore.mips32.o
                                          0x27 (size before relaxing)
- *fill*         0x0000000080019e8b        0x1 
+ *fill*         0x000000008001a093        0x1 
  .rodata.str1.4
-                0x0000000080019e8c       0x54 kernel/halt.mips32.o
+                0x000000008001a094       0x54 kernel/halt.mips32.o
  .rodata.str1.4
-                0x0000000080019ee0       0xa4 kernel/stalloc.mips32.o
- .rodata        0x0000000080019f84      0x10c lib/xprintf.mips32.o
+                0x000000008001a0e8       0xa4 kernel/stalloc.mips32.o
+ .rodata        0x000000008001a18c      0x10c lib/xprintf.mips32.o
  .rodata.str1.4
-                0x000000008001a090       0x2c lib/bitmap.mips32.o
+                0x000000008001a298       0x2c lib/bitmap.mips32.o
                                          0x40 (size before relaxing)
  .rodata.str1.4
-                0x000000008001a0bc       0x2c drivers/bootargs.mips32.o
+                0x000000008001a2c4       0x2c drivers/bootargs.mips32.o
                                           0x1 (size before relaxing)
  .rodata.str1.4
-                0x000000008001a0bc       0x27 proc/syscall.mips32.o
- *fill*         0x000000008001a0e3        0x1 
+                0x000000008001a2c4       0x27 proc/syscall.mips32.o
+ *fill*         0x000000008001a2eb        0x1 
  .rodata.str1.4
-                0x000000008001a0e4       0x52 proc/process.mips32.o
+                0x000000008001a2ec       0x52 proc/process.mips32.o
                                          0x66 (size before relaxing)
- *fill*         0x000000008001a136        0x2 
+ *fill*         0x000000008001a33e        0x2 
  .rodata.str1.4
-                0x000000008001a138      0x2d1 fs/vfs.mips32.o
+                0x000000008001a340      0x2d1 fs/vfs.mips32.o
                                         0x2e5 (size before relaxing)
- *fill*         0x000000008001a409        0x3 
+ *fill*         0x000000008001a611        0x3 
  .rodata.str1.4
-                0x000000008001a40c       0xd2 fs/tfs.mips32.o
+                0x000000008001a614       0xd2 fs/tfs.mips32.o
                                          0xd6 (size before relaxing)
- *fill*         0x000000008001a4de        0x2 
+ *fill*         0x000000008001a6e6        0x2 
  .rodata.str1.4
-                0x000000008001a4e0       0xa0 fs/filesystems.mips32.o
+                0x000000008001a6e8       0xa0 fs/filesystems.mips32.o
  .rodata.str1.4
-                0x000000008001a580        0xc vm/memory.mips32.o
+                0x000000008001a788        0xc vm/memory.mips32.o
                                          0x20 (size before relaxing)
  .rodata.str1.4
-                0x000000008001a58c      0x3cd init/mips32/main.mips32.o
+                0x000000008001a794      0x3cd init/mips32/main.mips32.o
                                         0x3e5 (size before relaxing)
- *fill*         0x000000008001a959        0x3 
+ *fill*         0x000000008001ab61        0x3 
  .rodata.str1.4
-                0x000000008001a95c       0xd2 kernel/mips32/interrupt.mips32.o
- *fill*         0x000000008001aa2e        0x2 
+                0x000000008001ab64       0xd2 kernel/mips32/interrupt.mips32.o
+ *fill*         0x000000008001ac36        0x2 
  .rodata.str1.4
-                0x000000008001aa30      0x272 kernel/mips32/exception.mips32.o
- *fill*         0x000000008001aca2        0x2 
- .rodata        0x000000008001aca4       0x38 kernel/mips32/exception.mips32.o
+                0x000000008001ac38      0x272 kernel/mips32/exception.mips32.o
+ *fill*         0x000000008001aeaa        0x2 
+ .rodata        0x000000008001aeac       0x38 kernel/mips32/exception.mips32.o
  .rodata.str1.4
-                0x000000008001acdc      0x10c vm/mips32/mm_virt.mips32.o
+                0x000000008001aee4      0x10c vm/mips32/mm_virt.mips32.o
                                         0x120 (size before relaxing)
  .rodata.str1.4
-                0x000000008001ade8       0x72 vm/mips32/tlb.mips32.o
+                0x000000008001aff0       0x72 vm/mips32/tlb.mips32.o
                                          0x85 (size before relaxing)
- *fill*         0x000000008001ae5a        0x2 
+ *fill*         0x000000008001b062        0x2 
  .rodata.str1.4
-                0x000000008001ae5c       0xc9 vm/mips32/mm_phys.mips32.o
+                0x000000008001b064       0xc9 vm/mips32/mm_phys.mips32.o
                                          0xdd (size before relaxing)
- *fill*         0x000000008001af25        0x3 
+ *fill*         0x000000008001b12d        0x3 
  .rodata.str1.4
-                0x000000008001af28       0x9b drivers/mips32/disk.mips32.o
+                0x000000008001b130       0x9b drivers/mips32/disk.mips32.o
                                          0xaf (size before relaxing)
- *fill*         0x000000008001afc3        0x1 
+ *fill*         0x000000008001b1cb        0x1 
  .rodata.str1.4
-                0x000000008001afc4      0x134 drivers/mips32/metadev.mips32.o
+                0x000000008001b1cc      0x134 drivers/mips32/metadev.mips32.o
                                         0x148 (size before relaxing)
  .rodata.str1.4
-                0x000000008001b0f8       0x96 drivers/mips32/tty.mips32.o
- *fill*         0x000000008001b18e        0x2 
+                0x000000008001b300       0x96 drivers/mips32/tty.mips32.o
+ *fill*         0x000000008001b396        0x2 
  .rodata.str1.4
-                0x000000008001b190       0xaa drivers/mips32/device.mips32.o
- *fill*         0x000000008001b23a        0x2 
+                0x000000008001b398       0xaa drivers/mips32/device.mips32.o
+ *fill*         0x000000008001b442        0x2 
  .rodata.str1.4
-                0x000000008001b23c       0x51 drivers/mips32/drivers.mips32.o
- *fill*         0x000000008001b28d        0x3 
+                0x000000008001b444       0x51 drivers/mips32/drivers.mips32.o
+ *fill*         0x000000008001b495        0x3 
  .rodata.str1.4
-                0x000000008001b290       0x18 proc/mips32/exception.mips32.o
+                0x000000008001b498       0x18 proc/mips32/exception.mips32.o
                                         0x1da (size before relaxing)
- .rodata        0x000000008001b2a8       0x38 proc/mips32/exception.mips32.o
+ .rodata        0x000000008001b4b0       0x38 proc/mips32/exception.mips32.o
 
-.MIPS.abiflags  0x000000008001b2e0       0x18
+.MIPS.abiflags  0x000000008001b4e8       0x18
  .MIPS.abiflags
-                0x000000008001b2e0       0x18 init/common.mips32.o
+                0x000000008001b4e8       0x18 init/common.mips32.o
 
-.rel.dyn        0x000000008001b2f8        0x0
- .rel.dyn       0x000000008001b2f8        0x0 fs/filesystems.mips32.o
+.rel.dyn        0x000000008001b500        0x0
+ .rel.dyn       0x000000008001b500        0x0 fs/filesystems.mips32.o
 
-.data           0x000000008001b2f8       0x7c
+.data           0x000000008001b500       0x7c
  *(.data)
- .data          0x000000008001b2f8        0x0 init/common.mips32.o
- .data          0x000000008001b2f8        0x0 kernel/panic.mips32.o
- .data          0x000000008001b2f8        0x0 kernel/thread.mips32.o
- .data          0x000000008001b2f8        0x8 kernel/scheduler.mips32.o
- .data          0x000000008001b300        0x0 kernel/sleepq.mips32.o
- .data          0x000000008001b300        0x0 kernel/semaphore.mips32.o
- .data          0x000000008001b300        0x0 kernel/halt.mips32.o
- .data          0x000000008001b300        0x0 kernel/stalloc.mips32.o
- .data          0x000000008001b300        0x0 lib/libc.mips32.o
- .data          0x000000008001b300        0x0 lib/xprintf.mips32.o
- .data          0x000000008001b300        0x0 lib/bitmap.mips32.o
- .data          0x000000008001b300        0x0 lib/debug.mips32.o
- .data          0x000000008001b300        0x0 drivers/bootargs.mips32.o
- .data          0x000000008001b300        0x0 drivers/disksched.mips32.o
- .data          0x000000008001b300        0x0 drivers/timer.mips32.o
- .data          0x000000008001b300        0x0 proc/elf.mips32.o
- .data          0x000000008001b300        0x0 proc/syscall.mips32.o
- .data          0x000000008001b300        0x0 proc/process.mips32.o
- .data          0x000000008001b300        0x0 fs/vfs.mips32.o
- .data          0x000000008001b300        0x0 fs/tfs.mips32.o
- .data          0x000000008001b300       0x10 fs/filesystems.mips32.o
- .data          0x000000008001b310        0x0 lib/gcc/divdi3.mips32.o
- .data          0x000000008001b310        0x4 lib/gcc/qdivrem.mips32.o
- .data          0x000000008001b314        0x0 lib/gcc/udivdi3.mips32.o
- .data          0x000000008001b314        0x0 lib/gcc/umoddi3.mips32.o
- .data          0x000000008001b314        0x0 init/mips32/_boot.mips32.o
- .data          0x000000008001b314        0x0 kernel/mips32/_cswitch.mips32.o
- .data          0x000000008001b314        0x0 kernel/mips32/_interrupt.mips32.o
- .data          0x000000008001b314        0x0 kernel/mips32/_spinlock.mips32.o
- .data          0x000000008001b314        0x0 kernel/mips32/idle.mips32.o
- .data          0x000000008001b314        0x0 vm/mips32/_tlb.mips32.o
- .data          0x000000008001b314        0xc lib/mips32/rand.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/_timer.mips32.o
- .data          0x000000008001b320        0x0 vm/memory.mips32.o
- .data          0x000000008001b320        0x0 init/mips32/main.mips32.o
- .data          0x000000008001b320        0x0 kernel/mips32/cswitch.mips32.o
- .data          0x000000008001b320        0x0 kernel/mips32/interrupt.mips32.o
- .data          0x000000008001b320        0x0 kernel/mips32/exception.mips32.o
- .data          0x000000008001b320        0x0 vm/mips32/mm_virt.mips32.o
- .data          0x000000008001b320        0x0 vm/mips32/tlb.mips32.o
- .data          0x000000008001b320        0x0 vm/mips32/mm_phys.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/disk.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/metadev.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/polltty.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/tty.mips32.o
- .data          0x000000008001b320        0x0 drivers/mips32/device.mips32.o
- .data          0x000000008001b320       0x54 drivers/mips32/drivers.mips32.o
-                0x000000008001b320                drivers_available
- .data          0x000000008001b374        0x0 proc/mips32/exception.mips32.o
- .data          0x000000008001b374        0x0 proc/mips32/_syscall.mips32.o
- .data          0x000000008001b374        0x0 proc/mips32/_proc.mips32.o
+ .data          0x000000008001b500        0x0 init/common.mips32.o
+ .data          0x000000008001b500        0x0 kernel/panic.mips32.o
+ .data          0x000000008001b500        0x0 kernel/thread.mips32.o
+ .data          0x000000008001b500        0x8 kernel/scheduler.mips32.o
+ .data          0x000000008001b508        0x0 kernel/sleepq.mips32.o
+ .data          0x000000008001b508        0x0 kernel/semaphore.mips32.o
+ .data          0x000000008001b508        0x0 kernel/halt.mips32.o
+ .data          0x000000008001b508        0x0 kernel/stalloc.mips32.o
+ .data          0x000000008001b508        0x0 lib/libc.mips32.o
+ .data          0x000000008001b508        0x0 lib/xprintf.mips32.o
+ .data          0x000000008001b508        0x0 lib/bitmap.mips32.o
+ .data          0x000000008001b508        0x0 lib/debug.mips32.o
+ .data          0x000000008001b508        0x0 drivers/bootargs.mips32.o
+ .data          0x000000008001b508        0x0 drivers/disksched.mips32.o
+ .data          0x000000008001b508        0x0 drivers/timer.mips32.o
+ .data          0x000000008001b508        0x0 proc/elf.mips32.o
+ .data          0x000000008001b508        0x0 proc/syscall.mips32.o
+ .data          0x000000008001b508        0x0 proc/process.mips32.o
+ .data          0x000000008001b508        0x0 proc/usr_sem.mips32.o
+ .data          0x000000008001b508        0x0 fs/vfs.mips32.o
+ .data          0x000000008001b508        0x0 fs/tfs.mips32.o
+ .data          0x000000008001b508       0x10 fs/filesystems.mips32.o
+ .data          0x000000008001b518        0x0 lib/gcc/divdi3.mips32.o
+ .data          0x000000008001b518        0x4 lib/gcc/qdivrem.mips32.o
+ .data          0x000000008001b51c        0x0 lib/gcc/udivdi3.mips32.o
+ .data          0x000000008001b51c        0x0 lib/gcc/umoddi3.mips32.o
+ .data          0x000000008001b51c        0x0 init/mips32/_boot.mips32.o
+ .data          0x000000008001b51c        0x0 kernel/mips32/_cswitch.mips32.o
+ .data          0x000000008001b51c        0x0 kernel/mips32/_interrupt.mips32.o
+ .data          0x000000008001b51c        0x0 kernel/mips32/_spinlock.mips32.o
+ .data          0x000000008001b51c        0x0 kernel/mips32/idle.mips32.o
+ .data          0x000000008001b51c        0x0 vm/mips32/_tlb.mips32.o
+ .data          0x000000008001b51c        0xc lib/mips32/rand.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/_timer.mips32.o
+ .data          0x000000008001b528        0x0 vm/memory.mips32.o
+ .data          0x000000008001b528        0x0 init/mips32/main.mips32.o
+ .data          0x000000008001b528        0x0 kernel/mips32/cswitch.mips32.o
+ .data          0x000000008001b528        0x0 kernel/mips32/interrupt.mips32.o
+ .data          0x000000008001b528        0x0 kernel/mips32/exception.mips32.o
+ .data          0x000000008001b528        0x0 vm/mips32/mm_virt.mips32.o
+ .data          0x000000008001b528        0x0 vm/mips32/tlb.mips32.o
+ .data          0x000000008001b528        0x0 vm/mips32/mm_phys.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/disk.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/metadev.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/polltty.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/tty.mips32.o
+ .data          0x000000008001b528        0x0 drivers/mips32/device.mips32.o
+ .data          0x000000008001b528       0x54 drivers/mips32/drivers.mips32.o
+                0x000000008001b528                drivers_available
+ .data          0x000000008001b57c        0x0 proc/mips32/exception.mips32.o
+ .data          0x000000008001b57c        0x0 proc/mips32/_syscall.mips32.o
+ .data          0x000000008001b57c        0x0 proc/mips32/_proc.mips32.o
 
-.bss            0x000000008001b374    0x2335c
+.bss            0x000000008001b57c    0x23960
  *(.bss COMMON)
- .bss           0x000000008001b374        0x0 init/common.mips32.o
- .bss           0x000000008001b374        0x0 kernel/panic.mips32.o
- .bss           0x000000008001b374        0x4 kernel/thread.mips32.o
- COMMON         0x000000008001b378    0x20804 kernel/thread.mips32.o
-                0x000000008001b378                thread_table
-                0x000000008001bb78                thread_stack_areas
-                0x000000008003bb78                thread_table_slock
- .bss           0x000000008003bb7c        0x0 kernel/scheduler.mips32.o
- COMMON         0x000000008003bb7c       0x10 kernel/scheduler.mips32.o
-                0x000000008003bb7c                scheduler_current_thread
- .bss           0x000000008003bb8c      0x200 kernel/sleepq.mips32.o
- .bss           0x000000008003bd8c      0x608 kernel/semaphore.mips32.o
- .bss           0x000000008003c394        0x0 kernel/halt.mips32.o
- .bss           0x000000008003c394        0x4 kernel/stalloc.mips32.o
- .bss           0x000000008003c398        0x0 lib/libc.mips32.o
- .bss           0x000000008003c398        0x4 lib/xprintf.mips32.o
-                0x000000008003c398                kprintf_slock
- .bss           0x000000008003c39c        0x0 lib/bitmap.mips32.o
- .bss           0x000000008003c39c        0x0 lib/debug.mips32.o
- .bss           0x000000008003c39c      0x100 drivers/bootargs.mips32.o
- .bss           0x000000008003c49c        0x0 drivers/disksched.mips32.o
- .bss           0x000000008003c49c        0x0 drivers/timer.mips32.o
- .bss           0x000000008003c49c        0x0 proc/elf.mips32.o
- .bss           0x000000008003c49c        0x0 proc/syscall.mips32.o
- .bss           0x000000008003c49c        0x0 proc/process.mips32.o
- COMMON         0x000000008003c49c      0x100 proc/process.mips32.o
-                0x000000008003c49c                process_entry_points
-                0x000000008003c51c                process_stack_tops
- .bss           0x000000008003c59c     0x18b8 fs/vfs.mips32.o
- .bss           0x000000008003de54        0x0 fs/tfs.mips32.o
- .bss           0x000000008003de54        0x0 fs/filesystems.mips32.o
- .bss           0x000000008003de54        0x0 lib/gcc/divdi3.mips32.o
- .bss           0x000000008003de54        0x0 lib/gcc/qdivrem.mips32.o
- .bss           0x000000008003de54        0x0 lib/gcc/udivdi3.mips32.o
- .bss           0x000000008003de54        0x0 lib/gcc/umoddi3.mips32.o
- .bss           0x000000008003de54        0x0 init/mips32/_boot.mips32.o
- .bss           0x000000008003de54        0x0 kernel/mips32/_cswitch.mips32.o
- .bss           0x000000008003de54        0x0 kernel/mips32/_interrupt.mips32.o
- .bss           0x000000008003de54        0x0 kernel/mips32/_spinlock.mips32.o
- .bss           0x000000008003de54        0x0 kernel/mips32/idle.mips32.o
- .bss           0x000000008003de54        0x0 vm/mips32/_tlb.mips32.o
- .bss           0x000000008003de54        0x0 lib/mips32/rand.mips32.o
- .bss           0x000000008003de54        0x0 drivers/mips32/_timer.mips32.o
- .bss           0x000000008003de54        0x0 vm/memory.mips32.o
- .bss           0x000000008003de54        0x4 init/mips32/main.mips32.o
-                0x000000008003de54                kernel_bootstrap_finished
- .bss           0x000000008003de58        0x0 kernel/mips32/cswitch.mips32.o
- .bss           0x000000008003de58      0x600 kernel/mips32/interrupt.mips32.o
- COMMON         0x000000008003e458       0x10 kernel/mips32/interrupt.mips32.o
-                0x000000008003e458                interrupt_stacks
- .bss           0x000000008003e468        0x0 kernel/mips32/exception.mips32.o
- .bss           0x000000008003e468        0x0 vm/mips32/mm_virt.mips32.o
- .bss           0x000000008003e468        0x0 vm/mips32/tlb.mips32.o
- .bss           0x000000008003e468       0x14 vm/mips32/mm_phys.mips32.o
- .bss           0x000000008003e47c        0x0 drivers/mips32/disk.mips32.o
- .bss           0x000000008003e47c       0x48 drivers/mips32/metadev.mips32.o
- .bss           0x000000008003e4c4        0x4 drivers/mips32/polltty.mips32.o
- .bss           0x000000008003e4c8        0x4 drivers/mips32/tty.mips32.o
- .bss           0x000000008003e4cc      0x204 drivers/mips32/device.mips32.o
- .bss           0x000000008003e6d0        0x0 drivers/mips32/drivers.mips32.o
- .bss           0x000000008003e6d0        0x0 proc/mips32/exception.mips32.o
- .bss           0x000000008003e6d0        0x0 proc/mips32/_syscall.mips32.o
- .bss           0x000000008003e6d0        0x0 proc/mips32/_proc.mips32.o
-                0x000000008003e6d0                KERNEL_ENDS_HERE = .
+ .bss           0x000000008001b57c        0x0 init/common.mips32.o
+ .bss           0x000000008001b57c        0x0 kernel/panic.mips32.o
+ .bss           0x000000008001b57c        0x4 kernel/thread.mips32.o
+ COMMON         0x000000008001b580    0x20804 kernel/thread.mips32.o
+                0x000000008001b580                thread_table
+                0x000000008001bd80                thread_stack_areas
+                0x000000008003bd80                thread_table_slock
+ .bss           0x000000008003bd84        0x0 kernel/scheduler.mips32.o
+ COMMON         0x000000008003bd84       0x10 kernel/scheduler.mips32.o
+                0x000000008003bd84                scheduler_current_thread
+ .bss           0x000000008003bd94      0x200 kernel/sleepq.mips32.o
+ .bss           0x000000008003bf94      0x608 kernel/semaphore.mips32.o
+ .bss           0x000000008003c59c        0x0 kernel/halt.mips32.o
+ .bss           0x000000008003c59c        0x4 kernel/stalloc.mips32.o
+ .bss           0x000000008003c5a0        0x0 lib/libc.mips32.o
+ .bss           0x000000008003c5a0        0x4 lib/xprintf.mips32.o
+                0x000000008003c5a0                kprintf_slock
+ .bss           0x000000008003c5a4        0x0 lib/bitmap.mips32.o
+ .bss           0x000000008003c5a4        0x0 lib/debug.mips32.o
+ .bss           0x000000008003c5a4      0x100 drivers/bootargs.mips32.o
+ .bss           0x000000008003c6a4        0x0 drivers/disksched.mips32.o
+ .bss           0x000000008003c6a4        0x0 drivers/timer.mips32.o
+ .bss           0x000000008003c6a4        0x0 proc/elf.mips32.o
+ .bss           0x000000008003c6a4        0x0 proc/syscall.mips32.o
+ .bss           0x000000008003c6a4        0x0 proc/process.mips32.o
+ COMMON         0x000000008003c6a4      0x100 proc/process.mips32.o
+                0x000000008003c6a4                process_entry_points
+                0x000000008003c724                process_stack_tops
+ .bss           0x000000008003c7a4      0x600 proc/usr_sem.mips32.o
+ COMMON         0x000000008003cda4        0x4 proc/usr_sem.mips32.o
+                0x000000008003cda4                sem_table_slock
+ .bss           0x000000008003cda8     0x18b8 fs/vfs.mips32.o
+ .bss           0x000000008003e660        0x0 fs/tfs.mips32.o
+ .bss           0x000000008003e660        0x0 fs/filesystems.mips32.o
+ .bss           0x000000008003e660        0x0 lib/gcc/divdi3.mips32.o
+ .bss           0x000000008003e660        0x0 lib/gcc/qdivrem.mips32.o
+ .bss           0x000000008003e660        0x0 lib/gcc/udivdi3.mips32.o
+ .bss           0x000000008003e660        0x0 lib/gcc/umoddi3.mips32.o
+ .bss           0x000000008003e660        0x0 init/mips32/_boot.mips32.o
+ .bss           0x000000008003e660        0x0 kernel/mips32/_cswitch.mips32.o
+ .bss           0x000000008003e660        0x0 kernel/mips32/_interrupt.mips32.o
+ .bss           0x000000008003e660        0x0 kernel/mips32/_spinlock.mips32.o
+ .bss           0x000000008003e660        0x0 kernel/mips32/idle.mips32.o
+ .bss           0x000000008003e660        0x0 vm/mips32/_tlb.mips32.o
+ .bss           0x000000008003e660        0x0 lib/mips32/rand.mips32.o
+ .bss           0x000000008003e660        0x0 drivers/mips32/_timer.mips32.o
+ .bss           0x000000008003e660        0x0 vm/memory.mips32.o
+ .bss           0x000000008003e660        0x4 init/mips32/main.mips32.o
+                0x000000008003e660                kernel_bootstrap_finished
+ .bss           0x000000008003e664        0x0 kernel/mips32/cswitch.mips32.o
+ .bss           0x000000008003e664      0x600 kernel/mips32/interrupt.mips32.o
+ COMMON         0x000000008003ec64       0x10 kernel/mips32/interrupt.mips32.o
+                0x000000008003ec64                interrupt_stacks
+ .bss           0x000000008003ec74        0x0 kernel/mips32/exception.mips32.o
+ .bss           0x000000008003ec74        0x0 vm/mips32/mm_virt.mips32.o
+ .bss           0x000000008003ec74        0x0 vm/mips32/tlb.mips32.o
+ .bss           0x000000008003ec74       0x14 vm/mips32/mm_phys.mips32.o
+ .bss           0x000000008003ec88        0x0 drivers/mips32/disk.mips32.o
+ .bss           0x000000008003ec88       0x48 drivers/mips32/metadev.mips32.o
+ .bss           0x000000008003ecd0        0x4 drivers/mips32/polltty.mips32.o
+ .bss           0x000000008003ecd4        0x4 drivers/mips32/tty.mips32.o
+ .bss           0x000000008003ecd8      0x204 drivers/mips32/device.mips32.o
+ .bss           0x000000008003eedc        0x0 drivers/mips32/drivers.mips32.o
+ .bss           0x000000008003eedc        0x0 proc/mips32/exception.mips32.o
+ .bss           0x000000008003eedc        0x0 proc/mips32/_syscall.mips32.o
+ .bss           0x000000008003eedc        0x0 proc/mips32/_proc.mips32.o
+                0x000000008003eedc                KERNEL_ENDS_HERE = .
 LOAD init/common.mips32.o
 LOAD kernel/panic.mips32.o
 LOAD kernel/thread.mips32.o
@@ -647,6 +660,7 @@ LOAD drivers/timer.mips32.o
 LOAD proc/elf.mips32.o
 LOAD proc/syscall.mips32.o
 LOAD proc/process.mips32.o
+LOAD proc/usr_sem.mips32.o
 LOAD fs/vfs.mips32.o
 LOAD fs/tfs.mips32.o
 LOAD fs/filesystems.mips32.o
@@ -684,7 +698,7 @@ OUTPUT(kudos-mips32 elf32-bigmips)
 .reginfo        0x0000000000000000       0x18
  .reginfo       0x0000000000000000       0x18 init/common.mips32.o
 
-.pdr            0x0000000000000000     0x1940
+.pdr            0x0000000000000000     0x19c0
  .pdr           0x0000000000000000       0x40 init/common.mips32.o
  .pdr           0x0000000000000040       0x20 kernel/panic.mips32.o
  .pdr           0x0000000000000060      0x120 kernel/thread.mips32.o
@@ -703,38 +717,39 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .pdr           0x00000000000007a0       0x20 proc/elf.mips32.o
  .pdr           0x00000000000007c0       0x20 proc/syscall.mips32.o
  .pdr           0x00000000000007e0       0xe0 proc/process.mips32.o
- .pdr           0x00000000000008c0      0x280 fs/vfs.mips32.o
- .pdr           0x0000000000000b40      0x160 fs/tfs.mips32.o
- .pdr           0x0000000000000ca0       0x60 fs/filesystems.mips32.o
- .pdr           0x0000000000000d00       0x20 lib/gcc/divdi3.mips32.o
- .pdr           0x0000000000000d20       0x40 lib/gcc/qdivrem.mips32.o
- .pdr           0x0000000000000d60       0x20 lib/gcc/udivdi3.mips32.o
- .pdr           0x0000000000000d80       0x20 lib/gcc/umoddi3.mips32.o
- .pdr           0x0000000000000da0       0x40 init/mips32/_boot.mips32.o
- .pdr           0x0000000000000de0       0xa0 kernel/mips32/_cswitch.mips32.o
- .pdr           0x0000000000000e80      0x180 kernel/mips32/_interrupt.mips32.o
- .pdr           0x0000000000001000       0x40 kernel/mips32/_spinlock.mips32.o
- .pdr           0x0000000000001040       0x20 kernel/mips32/idle.mips32.o
- .pdr           0x0000000000001060       0xe0 vm/mips32/_tlb.mips32.o
- .pdr           0x0000000000001140       0x40 lib/mips32/rand.mips32.o
- .pdr           0x0000000000001180       0x20 drivers/mips32/_timer.mips32.o
- .pdr           0x00000000000011a0       0x20 vm/memory.mips32.o
- .pdr           0x00000000000011c0       0x20 init/mips32/main.mips32.o
- .pdr           0x00000000000011e0       0xa0 kernel/mips32/cswitch.mips32.o
- .pdr           0x0000000000001280       0x80 kernel/mips32/interrupt.mips32.o
- .pdr           0x0000000000001300       0x40 kernel/mips32/exception.mips32.o
- .pdr           0x0000000000001340       0xe0 vm/mips32/mm_virt.mips32.o
- .pdr           0x0000000000001420       0x80 vm/mips32/tlb.mips32.o
- .pdr           0x00000000000014a0       0xa0 vm/mips32/mm_phys.mips32.o
- .pdr           0x0000000000001540      0x100 drivers/mips32/disk.mips32.o
- .pdr           0x0000000000001640      0x180 drivers/mips32/metadev.mips32.o
- .pdr           0x00000000000017c0       0x60 drivers/mips32/polltty.mips32.o
- .pdr           0x0000000000001820       0x80 drivers/mips32/tty.mips32.o
- .pdr           0x00000000000018a0       0x40 drivers/mips32/device.mips32.o
- .pdr           0x00000000000018e0        0x0 drivers/mips32/drivers.mips32.o
- .pdr           0x00000000000018e0       0x20 proc/mips32/exception.mips32.o
- .pdr           0x0000000000001900       0x20 proc/mips32/_syscall.mips32.o
- .pdr           0x0000000000001920       0x20 proc/mips32/_proc.mips32.o
+ .pdr           0x00000000000008c0       0x80 proc/usr_sem.mips32.o
+ .pdr           0x0000000000000940      0x280 fs/vfs.mips32.o
+ .pdr           0x0000000000000bc0      0x160 fs/tfs.mips32.o
+ .pdr           0x0000000000000d20       0x60 fs/filesystems.mips32.o
+ .pdr           0x0000000000000d80       0x20 lib/gcc/divdi3.mips32.o
+ .pdr           0x0000000000000da0       0x40 lib/gcc/qdivrem.mips32.o
+ .pdr           0x0000000000000de0       0x20 lib/gcc/udivdi3.mips32.o
+ .pdr           0x0000000000000e00       0x20 lib/gcc/umoddi3.mips32.o
+ .pdr           0x0000000000000e20       0x40 init/mips32/_boot.mips32.o
+ .pdr           0x0000000000000e60       0xa0 kernel/mips32/_cswitch.mips32.o
+ .pdr           0x0000000000000f00      0x180 kernel/mips32/_interrupt.mips32.o
+ .pdr           0x0000000000001080       0x40 kernel/mips32/_spinlock.mips32.o
+ .pdr           0x00000000000010c0       0x20 kernel/mips32/idle.mips32.o
+ .pdr           0x00000000000010e0       0xe0 vm/mips32/_tlb.mips32.o
+ .pdr           0x00000000000011c0       0x40 lib/mips32/rand.mips32.o
+ .pdr           0x0000000000001200       0x20 drivers/mips32/_timer.mips32.o
+ .pdr           0x0000000000001220       0x20 vm/memory.mips32.o
+ .pdr           0x0000000000001240       0x20 init/mips32/main.mips32.o
+ .pdr           0x0000000000001260       0xa0 kernel/mips32/cswitch.mips32.o
+ .pdr           0x0000000000001300       0x80 kernel/mips32/interrupt.mips32.o
+ .pdr           0x0000000000001380       0x40 kernel/mips32/exception.mips32.o
+ .pdr           0x00000000000013c0       0xe0 vm/mips32/mm_virt.mips32.o
+ .pdr           0x00000000000014a0       0x80 vm/mips32/tlb.mips32.o
+ .pdr           0x0000000000001520       0xa0 vm/mips32/mm_phys.mips32.o
+ .pdr           0x00000000000015c0      0x100 drivers/mips32/disk.mips32.o
+ .pdr           0x00000000000016c0      0x180 drivers/mips32/metadev.mips32.o
+ .pdr           0x0000000000001840       0x60 drivers/mips32/polltty.mips32.o
+ .pdr           0x00000000000018a0       0x80 drivers/mips32/tty.mips32.o
+ .pdr           0x0000000000001920       0x40 drivers/mips32/device.mips32.o
+ .pdr           0x0000000000001960        0x0 drivers/mips32/drivers.mips32.o
+ .pdr           0x0000000000001960       0x20 proc/mips32/exception.mips32.o
+ .pdr           0x0000000000001980       0x20 proc/mips32/_syscall.mips32.o
+ .pdr           0x00000000000019a0       0x20 proc/mips32/_proc.mips32.o
 
 .mdebug.abi32   0x0000000000000000        0x0
  .mdebug.abi32  0x0000000000000000        0x0 init/common.mips32.o
@@ -755,6 +770,7 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .mdebug.abi32  0x0000000000000000        0x0 proc/elf.mips32.o
  .mdebug.abi32  0x0000000000000000        0x0 proc/syscall.mips32.o
  .mdebug.abi32  0x0000000000000000        0x0 proc/process.mips32.o
+ .mdebug.abi32  0x0000000000000000        0x0 proc/usr_sem.mips32.o
  .mdebug.abi32  0x0000000000000000        0x0 fs/vfs.mips32.o
  .mdebug.abi32  0x0000000000000000        0x0 fs/tfs.mips32.o
  .mdebug.abi32  0x0000000000000000        0x0 fs/filesystems.mips32.o
@@ -800,6 +816,7 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .comment       0x0000000000000011       0x12 proc/elf.mips32.o
  .comment       0x0000000000000011       0x12 proc/syscall.mips32.o
  .comment       0x0000000000000011       0x12 proc/process.mips32.o
+ .comment       0x0000000000000011       0x12 proc/usr_sem.mips32.o
  .comment       0x0000000000000011       0x12 fs/vfs.mips32.o
  .comment       0x0000000000000011       0x12 fs/tfs.mips32.o
  .comment       0x0000000000000011       0x12 fs/filesystems.mips32.o
@@ -864,71 +881,73 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .gnu.attributes
                 0x0000000000000110       0x10 proc/process.mips32.o
  .gnu.attributes
-                0x0000000000000120       0x10 fs/vfs.mips32.o
+                0x0000000000000120       0x10 proc/usr_sem.mips32.o
  .gnu.attributes
-                0x0000000000000130       0x10 fs/tfs.mips32.o
+                0x0000000000000130       0x10 fs/vfs.mips32.o
  .gnu.attributes
-                0x0000000000000140       0x10 fs/filesystems.mips32.o
+                0x0000000000000140       0x10 fs/tfs.mips32.o
  .gnu.attributes
-                0x0000000000000150       0x10 lib/gcc/divdi3.mips32.o
+                0x0000000000000150       0x10 fs/filesystems.mips32.o
  .gnu.attributes
-                0x0000000000000160       0x10 lib/gcc/qdivrem.mips32.o
+                0x0000000000000160       0x10 lib/gcc/divdi3.mips32.o
  .gnu.attributes
-                0x0000000000000170       0x10 lib/gcc/udivdi3.mips32.o
+                0x0000000000000170       0x10 lib/gcc/qdivrem.mips32.o
  .gnu.attributes
-                0x0000000000000180       0x10 lib/gcc/umoddi3.mips32.o
+                0x0000000000000180       0x10 lib/gcc/udivdi3.mips32.o
  .gnu.attributes
-                0x0000000000000190       0x10 init/mips32/_boot.mips32.o
+                0x0000000000000190       0x10 lib/gcc/umoddi3.mips32.o
  .gnu.attributes
-                0x00000000000001a0       0x10 kernel/mips32/_cswitch.mips32.o
+                0x00000000000001a0       0x10 init/mips32/_boot.mips32.o
  .gnu.attributes
-                0x00000000000001b0       0x10 kernel/mips32/_interrupt.mips32.o
+                0x00000000000001b0       0x10 kernel/mips32/_cswitch.mips32.o
  .gnu.attributes
-                0x00000000000001c0       0x10 kernel/mips32/_spinlock.mips32.o
+                0x00000000000001c0       0x10 kernel/mips32/_interrupt.mips32.o
  .gnu.attributes
-                0x00000000000001d0       0x10 kernel/mips32/idle.mips32.o
+                0x00000000000001d0       0x10 kernel/mips32/_spinlock.mips32.o
  .gnu.attributes
-                0x00000000000001e0       0x10 vm/mips32/_tlb.mips32.o
+                0x00000000000001e0       0x10 kernel/mips32/idle.mips32.o
  .gnu.attributes
-                0x00000000000001f0       0x10 lib/mips32/rand.mips32.o
+                0x00000000000001f0       0x10 vm/mips32/_tlb.mips32.o
  .gnu.attributes
-                0x0000000000000200       0x10 drivers/mips32/_timer.mips32.o
+                0x0000000000000200       0x10 lib/mips32/rand.mips32.o
  .gnu.attributes
-                0x0000000000000210       0x10 vm/memory.mips32.o
+                0x0000000000000210       0x10 drivers/mips32/_timer.mips32.o
  .gnu.attributes
-                0x0000000000000220       0x10 init/mips32/main.mips32.o
+                0x0000000000000220       0x10 vm/memory.mips32.o
  .gnu.attributes
-                0x0000000000000230       0x10 kernel/mips32/cswitch.mips32.o
+                0x0000000000000230       0x10 init/mips32/main.mips32.o
  .gnu.attributes
-                0x0000000000000240       0x10 kernel/mips32/interrupt.mips32.o
+                0x0000000000000240       0x10 kernel/mips32/cswitch.mips32.o
  .gnu.attributes
-                0x0000000000000250       0x10 kernel/mips32/exception.mips32.o
+                0x0000000000000250       0x10 kernel/mips32/interrupt.mips32.o
  .gnu.attributes
-                0x0000000000000260       0x10 vm/mips32/mm_virt.mips32.o
+                0x0000000000000260       0x10 kernel/mips32/exception.mips32.o
  .gnu.attributes
-                0x0000000000000270       0x10 vm/mips32/tlb.mips32.o
+                0x0000000000000270       0x10 vm/mips32/mm_virt.mips32.o
  .gnu.attributes
-                0x0000000000000280       0x10 vm/mips32/mm_phys.mips32.o
+                0x0000000000000280       0x10 vm/mips32/tlb.mips32.o
  .gnu.attributes
-                0x0000000000000290       0x10 drivers/mips32/disk.mips32.o
+                0x0000000000000290       0x10 vm/mips32/mm_phys.mips32.o
  .gnu.attributes
-                0x00000000000002a0       0x10 drivers/mips32/metadev.mips32.o
+                0x00000000000002a0       0x10 drivers/mips32/disk.mips32.o
  .gnu.attributes
-                0x00000000000002b0       0x10 drivers/mips32/polltty.mips32.o
+                0x00000000000002b0       0x10 drivers/mips32/metadev.mips32.o
  .gnu.attributes
-                0x00000000000002c0       0x10 drivers/mips32/tty.mips32.o
+                0x00000000000002c0       0x10 drivers/mips32/polltty.mips32.o
  .gnu.attributes
-                0x00000000000002d0       0x10 drivers/mips32/device.mips32.o
+                0x00000000000002d0       0x10 drivers/mips32/tty.mips32.o
  .gnu.attributes
-                0x00000000000002e0       0x10 drivers/mips32/drivers.mips32.o
+                0x00000000000002e0       0x10 drivers/mips32/device.mips32.o
  .gnu.attributes
-                0x00000000000002f0       0x10 proc/mips32/exception.mips32.o
+                0x00000000000002f0       0x10 drivers/mips32/drivers.mips32.o
  .gnu.attributes
-                0x0000000000000300       0x10 proc/mips32/_syscall.mips32.o
+                0x0000000000000300       0x10 proc/mips32/exception.mips32.o
  .gnu.attributes
-                0x0000000000000310       0x10 proc/mips32/_proc.mips32.o
+                0x0000000000000310       0x10 proc/mips32/_syscall.mips32.o
+ .gnu.attributes
+                0x0000000000000320       0x10 proc/mips32/_proc.mips32.o
 
-.debug_info     0x0000000000000000     0xd98e
+.debug_info     0x0000000000000000     0xdbfe
  .debug_info    0x0000000000000000      0x55c init/common.mips32.o
  .debug_info    0x000000000000055c      0x140 kernel/panic.mips32.o
  .debug_info    0x000000000000069c      0x8ae kernel/thread.mips32.o
@@ -945,34 +964,35 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_info    0x0000000000003901      0x1b5 drivers/disksched.mips32.o
  .debug_info    0x0000000000003ab6       0xfe drivers/timer.mips32.o
  .debug_info    0x0000000000003bb4      0x5e1 proc/elf.mips32.o
- .debug_info    0x0000000000004195      0x1ae proc/syscall.mips32.o
- .debug_info    0x0000000000004343     0x1124 proc/process.mips32.o
- .debug_info    0x0000000000005467     0x1869 fs/vfs.mips32.o
- .debug_info    0x0000000000006cd0     0x1286 fs/tfs.mips32.o
- .debug_info    0x0000000000007f56      0xa32 fs/filesystems.mips32.o
- .debug_info    0x0000000000008988      0x131 lib/gcc/divdi3.mips32.o
- .debug_info    0x0000000000008ab9      0x34a lib/gcc/qdivrem.mips32.o
- .debug_info    0x0000000000008e03       0xbf lib/gcc/udivdi3.mips32.o
- .debug_info    0x0000000000008ec2       0xcc lib/gcc/umoddi3.mips32.o
- .debug_info    0x0000000000008f8e      0x2f9 vm/memory.mips32.o
- .debug_info    0x0000000000009287      0x5dc init/mips32/main.mips32.o
- .debug_info    0x0000000000009863      0x20f kernel/mips32/cswitch.mips32.o
- .debug_info    0x0000000000009a72      0x4d7 kernel/mips32/interrupt.mips32.o
- .debug_info    0x0000000000009f49      0x3f9 kernel/mips32/exception.mips32.o
- .debug_info    0x000000000000a342      0x505 vm/mips32/mm_virt.mips32.o
- .debug_info    0x000000000000a847      0x2f4 vm/mips32/tlb.mips32.o
- .debug_info    0x000000000000ab3b      0x59f vm/mips32/mm_phys.mips32.o
- .debug_info    0x000000000000b0da      0xa78 drivers/mips32/disk.mips32.o
- .debug_info    0x000000000000bb52      0x714 drivers/mips32/metadev.mips32.o
- .debug_info    0x000000000000c266      0x1a8 drivers/mips32/polltty.mips32.o
- .debug_info    0x000000000000c40e      0x75f drivers/mips32/tty.mips32.o
- .debug_info    0x000000000000cb6d      0x31e drivers/mips32/device.mips32.o
- .debug_info    0x000000000000ce8b      0x1c2 drivers/mips32/drivers.mips32.o
- .debug_info    0x000000000000d04d      0x5e8 proc/mips32/exception.mips32.o
- .debug_info    0x000000000000d635      0x11a proc/mips32/_syscall.mips32.o
- .debug_info    0x000000000000d74f      0x23f proc/mips32/_proc.mips32.o
+ .debug_info    0x0000000000004195      0x20b proc/syscall.mips32.o
+ .debug_info    0x00000000000043a0     0x1124 proc/process.mips32.o
+ .debug_info    0x00000000000054c4      0x213 proc/usr_sem.mips32.o
+ .debug_info    0x00000000000056d7     0x1869 fs/vfs.mips32.o
+ .debug_info    0x0000000000006f40     0x1286 fs/tfs.mips32.o
+ .debug_info    0x00000000000081c6      0xa32 fs/filesystems.mips32.o
+ .debug_info    0x0000000000008bf8      0x131 lib/gcc/divdi3.mips32.o
+ .debug_info    0x0000000000008d29      0x34a lib/gcc/qdivrem.mips32.o
+ .debug_info    0x0000000000009073       0xbf lib/gcc/udivdi3.mips32.o
+ .debug_info    0x0000000000009132       0xcc lib/gcc/umoddi3.mips32.o
+ .debug_info    0x00000000000091fe      0x2f9 vm/memory.mips32.o
+ .debug_info    0x00000000000094f7      0x5dc init/mips32/main.mips32.o
+ .debug_info    0x0000000000009ad3      0x20f kernel/mips32/cswitch.mips32.o
+ .debug_info    0x0000000000009ce2      0x4d7 kernel/mips32/interrupt.mips32.o
+ .debug_info    0x000000000000a1b9      0x3f9 kernel/mips32/exception.mips32.o
+ .debug_info    0x000000000000a5b2      0x505 vm/mips32/mm_virt.mips32.o
+ .debug_info    0x000000000000aab7      0x2f4 vm/mips32/tlb.mips32.o
+ .debug_info    0x000000000000adab      0x59f vm/mips32/mm_phys.mips32.o
+ .debug_info    0x000000000000b34a      0xa78 drivers/mips32/disk.mips32.o
+ .debug_info    0x000000000000bdc2      0x714 drivers/mips32/metadev.mips32.o
+ .debug_info    0x000000000000c4d6      0x1a8 drivers/mips32/polltty.mips32.o
+ .debug_info    0x000000000000c67e      0x75f drivers/mips32/tty.mips32.o
+ .debug_info    0x000000000000cddd      0x31e drivers/mips32/device.mips32.o
+ .debug_info    0x000000000000d0fb      0x1c2 drivers/mips32/drivers.mips32.o
+ .debug_info    0x000000000000d2bd      0x5e8 proc/mips32/exception.mips32.o
+ .debug_info    0x000000000000d8a5      0x11a proc/mips32/_syscall.mips32.o
+ .debug_info    0x000000000000d9bf      0x23f proc/mips32/_proc.mips32.o
 
-.debug_abbrev   0x0000000000000000     0x3b0d
+.debug_abbrev   0x0000000000000000     0x3c69
  .debug_abbrev  0x0000000000000000      0x155 init/common.mips32.o
  .debug_abbrev  0x0000000000000155       0xae kernel/panic.mips32.o
  .debug_abbrev  0x0000000000000203      0x29b kernel/thread.mips32.o
@@ -989,34 +1009,35 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_abbrev  0x00000000000012ff       0xd8 drivers/disksched.mips32.o
  .debug_abbrev  0x00000000000013d7       0xb2 drivers/timer.mips32.o
  .debug_abbrev  0x0000000000001489      0x12f proc/elf.mips32.o
- .debug_abbrev  0x00000000000015b8       0xb6 proc/syscall.mips32.o
- .debug_abbrev  0x000000000000166e      0x2a9 proc/process.mips32.o
- .debug_abbrev  0x0000000000001917      0x363 fs/vfs.mips32.o
- .debug_abbrev  0x0000000000001c7a      0x22a fs/tfs.mips32.o
- .debug_abbrev  0x0000000000001ea4      0x23a fs/filesystems.mips32.o
- .debug_abbrev  0x00000000000020de       0xa6 lib/gcc/divdi3.mips32.o
- .debug_abbrev  0x0000000000002184      0x15b lib/gcc/qdivrem.mips32.o
- .debug_abbrev  0x00000000000022df       0x8a lib/gcc/udivdi3.mips32.o
- .debug_abbrev  0x0000000000002369       0x99 lib/gcc/umoddi3.mips32.o
- .debug_abbrev  0x0000000000002402      0x127 vm/memory.mips32.o
- .debug_abbrev  0x0000000000002529       0xcc init/mips32/main.mips32.o
- .debug_abbrev  0x00000000000025f5      0x105 kernel/mips32/cswitch.mips32.o
- .debug_abbrev  0x00000000000026fa      0x1ae kernel/mips32/interrupt.mips32.o
- .debug_abbrev  0x00000000000028a8      0x100 kernel/mips32/exception.mips32.o
- .debug_abbrev  0x00000000000029a8      0x18b vm/mips32/mm_virt.mips32.o
- .debug_abbrev  0x0000000000002b33      0x12c vm/mips32/tlb.mips32.o
- .debug_abbrev  0x0000000000002c5f      0x17b vm/mips32/mm_phys.mips32.o
- .debug_abbrev  0x0000000000002dda      0x2a9 drivers/mips32/disk.mips32.o
- .debug_abbrev  0x0000000000003083      0x1e3 drivers/mips32/metadev.mips32.o
- .debug_abbrev  0x0000000000003266       0xfb drivers/mips32/polltty.mips32.o
- .debug_abbrev  0x0000000000003361      0x1d9 drivers/mips32/tty.mips32.o
- .debug_abbrev  0x000000000000353a      0x1cb drivers/mips32/device.mips32.o
- .debug_abbrev  0x0000000000003705       0xaa drivers/mips32/drivers.mips32.o
- .debug_abbrev  0x00000000000037af      0x173 proc/mips32/exception.mips32.o
- .debug_abbrev  0x0000000000003922       0xc9 proc/mips32/_syscall.mips32.o
- .debug_abbrev  0x00000000000039eb      0x122 proc/mips32/_proc.mips32.o
+ .debug_abbrev  0x00000000000015b8       0xeb proc/syscall.mips32.o
+ .debug_abbrev  0x00000000000016a3      0x2a9 proc/process.mips32.o
+ .debug_abbrev  0x000000000000194c      0x127 proc/usr_sem.mips32.o
+ .debug_abbrev  0x0000000000001a73      0x363 fs/vfs.mips32.o
+ .debug_abbrev  0x0000000000001dd6      0x22a fs/tfs.mips32.o
+ .debug_abbrev  0x0000000000002000      0x23a fs/filesystems.mips32.o
+ .debug_abbrev  0x000000000000223a       0xa6 lib/gcc/divdi3.mips32.o
+ .debug_abbrev  0x00000000000022e0      0x15b lib/gcc/qdivrem.mips32.o
+ .debug_abbrev  0x000000000000243b       0x8a lib/gcc/udivdi3.mips32.o
+ .debug_abbrev  0x00000000000024c5       0x99 lib/gcc/umoddi3.mips32.o
+ .debug_abbrev  0x000000000000255e      0x127 vm/memory.mips32.o
+ .debug_abbrev  0x0000000000002685       0xcc init/mips32/main.mips32.o
+ .debug_abbrev  0x0000000000002751      0x105 kernel/mips32/cswitch.mips32.o
+ .debug_abbrev  0x0000000000002856      0x1ae kernel/mips32/interrupt.mips32.o
+ .debug_abbrev  0x0000000000002a04      0x100 kernel/mips32/exception.mips32.o
+ .debug_abbrev  0x0000000000002b04      0x18b vm/mips32/mm_virt.mips32.o
+ .debug_abbrev  0x0000000000002c8f      0x12c vm/mips32/tlb.mips32.o
+ .debug_abbrev  0x0000000000002dbb      0x17b vm/mips32/mm_phys.mips32.o
+ .debug_abbrev  0x0000000000002f36      0x2a9 drivers/mips32/disk.mips32.o
+ .debug_abbrev  0x00000000000031df      0x1e3 drivers/mips32/metadev.mips32.o
+ .debug_abbrev  0x00000000000033c2       0xfb drivers/mips32/polltty.mips32.o
+ .debug_abbrev  0x00000000000034bd      0x1d9 drivers/mips32/tty.mips32.o
+ .debug_abbrev  0x0000000000003696      0x1cb drivers/mips32/device.mips32.o
+ .debug_abbrev  0x0000000000003861       0xaa drivers/mips32/drivers.mips32.o
+ .debug_abbrev  0x000000000000390b      0x173 proc/mips32/exception.mips32.o
+ .debug_abbrev  0x0000000000003a7e       0xc9 proc/mips32/_syscall.mips32.o
+ .debug_abbrev  0x0000000000003b47      0x122 proc/mips32/_proc.mips32.o
 
-.debug_loc      0x0000000000000000     0x83be
+.debug_loc      0x0000000000000000     0x86d7
  .debug_loc     0x0000000000000000       0xc0 init/common.mips32.o
  .debug_loc     0x00000000000000c0       0x97 kernel/panic.mips32.o
  .debug_loc     0x0000000000000157      0x29e kernel/thread.mips32.o
@@ -1031,33 +1052,34 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_loc     0x0000000000002dcf      0x2ed drivers/bootargs.mips32.o
  .debug_loc     0x00000000000030bc       0x54 drivers/timer.mips32.o
  .debug_loc     0x0000000000003110      0x1bc proc/elf.mips32.o
- .debug_loc     0x00000000000032cc      0x22f proc/syscall.mips32.o
- .debug_loc     0x00000000000034fb      0x9e3 proc/process.mips32.o
- .debug_loc     0x0000000000003ede      0xeeb fs/vfs.mips32.o
- .debug_loc     0x0000000000004dc9      0xd83 fs/tfs.mips32.o
- .debug_loc     0x0000000000005b4c      0x5a1 fs/filesystems.mips32.o
- .debug_loc     0x00000000000060ed      0x1cc lib/gcc/divdi3.mips32.o
- .debug_loc     0x00000000000062b9      0x676 lib/gcc/qdivrem.mips32.o
- .debug_loc     0x000000000000692f       0x50 lib/gcc/udivdi3.mips32.o
- .debug_loc     0x000000000000697f       0x50 lib/gcc/umoddi3.mips32.o
- .debug_loc     0x00000000000069cf      0x194 vm/memory.mips32.o
- .debug_loc     0x0000000000006b63       0x4f init/mips32/main.mips32.o
- .debug_loc     0x0000000000006bb2       0x41 kernel/mips32/cswitch.mips32.o
- .debug_loc     0x0000000000006bf3      0x25a kernel/mips32/interrupt.mips32.o
- .debug_loc     0x0000000000006e4d       0x6b kernel/mips32/exception.mips32.o
- .debug_loc     0x0000000000006eb8      0x3a1 vm/mips32/mm_virt.mips32.o
- .debug_loc     0x0000000000007259       0x42 vm/mips32/tlb.mips32.o
- .debug_loc     0x000000000000729b      0x266 vm/mips32/mm_phys.mips32.o
- .debug_loc     0x0000000000007501      0x4f5 drivers/mips32/disk.mips32.o
- .debug_loc     0x00000000000079f6      0x3ab drivers/mips32/metadev.mips32.o
- .debug_loc     0x0000000000007da1       0x22 drivers/mips32/polltty.mips32.o
- .debug_loc     0x0000000000007dc3      0x43c drivers/mips32/tty.mips32.o
- .debug_loc     0x00000000000081ff       0xdf drivers/mips32/device.mips32.o
- .debug_loc     0x00000000000082de       0x60 proc/mips32/exception.mips32.o
- .debug_loc     0x000000000000833e       0x2c proc/mips32/_syscall.mips32.o
- .debug_loc     0x000000000000836a       0x54 proc/mips32/_proc.mips32.o
+ .debug_loc     0x00000000000032cc      0x490 proc/syscall.mips32.o
+ .debug_loc     0x000000000000375c      0x9e3 proc/process.mips32.o
+ .debug_loc     0x000000000000413f       0xb8 proc/usr_sem.mips32.o
+ .debug_loc     0x00000000000041f7      0xeeb fs/vfs.mips32.o
+ .debug_loc     0x00000000000050e2      0xd83 fs/tfs.mips32.o
+ .debug_loc     0x0000000000005e65      0x5a1 fs/filesystems.mips32.o
+ .debug_loc     0x0000000000006406      0x1cc lib/gcc/divdi3.mips32.o
+ .debug_loc     0x00000000000065d2      0x676 lib/gcc/qdivrem.mips32.o
+ .debug_loc     0x0000000000006c48       0x50 lib/gcc/udivdi3.mips32.o
+ .debug_loc     0x0000000000006c98       0x50 lib/gcc/umoddi3.mips32.o
+ .debug_loc     0x0000000000006ce8      0x194 vm/memory.mips32.o
+ .debug_loc     0x0000000000006e7c       0x4f init/mips32/main.mips32.o
+ .debug_loc     0x0000000000006ecb       0x41 kernel/mips32/cswitch.mips32.o
+ .debug_loc     0x0000000000006f0c      0x25a kernel/mips32/interrupt.mips32.o
+ .debug_loc     0x0000000000007166       0x6b kernel/mips32/exception.mips32.o
+ .debug_loc     0x00000000000071d1      0x3a1 vm/mips32/mm_virt.mips32.o
+ .debug_loc     0x0000000000007572       0x42 vm/mips32/tlb.mips32.o
+ .debug_loc     0x00000000000075b4      0x266 vm/mips32/mm_phys.mips32.o
+ .debug_loc     0x000000000000781a      0x4f5 drivers/mips32/disk.mips32.o
+ .debug_loc     0x0000000000007d0f      0x3ab drivers/mips32/metadev.mips32.o
+ .debug_loc     0x00000000000080ba       0x22 drivers/mips32/polltty.mips32.o
+ .debug_loc     0x00000000000080dc      0x43c drivers/mips32/tty.mips32.o
+ .debug_loc     0x0000000000008518       0xdf drivers/mips32/device.mips32.o
+ .debug_loc     0x00000000000085f7       0x60 proc/mips32/exception.mips32.o
+ .debug_loc     0x0000000000008657       0x2c proc/mips32/_syscall.mips32.o
+ .debug_loc     0x0000000000008683       0x54 proc/mips32/_proc.mips32.o
 
-.debug_aranges  0x0000000000000000      0x538
+.debug_aranges  0x0000000000000000      0x558
  .debug_aranges
                 0x0000000000000000       0x20 init/common.mips32.o
  .debug_aranges
@@ -1095,71 +1117,72 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_aranges
                 0x0000000000000220       0x20 proc/process.mips32.o
  .debug_aranges
-                0x0000000000000240       0x20 fs/vfs.mips32.o
+                0x0000000000000240       0x20 proc/usr_sem.mips32.o
  .debug_aranges
-                0x0000000000000260       0x20 fs/tfs.mips32.o
+                0x0000000000000260       0x20 fs/vfs.mips32.o
  .debug_aranges
-                0x0000000000000280       0x20 fs/filesystems.mips32.o
+                0x0000000000000280       0x20 fs/tfs.mips32.o
  .debug_aranges
-                0x00000000000002a0       0x20 lib/gcc/divdi3.mips32.o
+                0x00000000000002a0       0x20 fs/filesystems.mips32.o
  .debug_aranges
-                0x00000000000002c0       0x20 lib/gcc/qdivrem.mips32.o
+                0x00000000000002c0       0x20 lib/gcc/divdi3.mips32.o
  .debug_aranges
-                0x00000000000002e0       0x20 lib/gcc/udivdi3.mips32.o
+                0x00000000000002e0       0x20 lib/gcc/qdivrem.mips32.o
  .debug_aranges
-                0x0000000000000300       0x20 lib/gcc/umoddi3.mips32.o
+                0x0000000000000300       0x20 lib/gcc/udivdi3.mips32.o
  .debug_aranges
-                0x0000000000000320       0x20 vm/memory.mips32.o
+                0x0000000000000320       0x20 lib/gcc/umoddi3.mips32.o
  .debug_aranges
-                0x0000000000000340       0x20 init/mips32/main.mips32.o
+                0x0000000000000340       0x20 vm/memory.mips32.o
  .debug_aranges
-                0x0000000000000360       0x20 kernel/mips32/cswitch.mips32.o
+                0x0000000000000360       0x20 init/mips32/main.mips32.o
  .debug_aranges
-                0x0000000000000380       0x20 kernel/mips32/interrupt.mips32.o
+                0x0000000000000380       0x20 kernel/mips32/cswitch.mips32.o
  .debug_aranges
-                0x00000000000003a0       0x20 kernel/mips32/exception.mips32.o
+                0x00000000000003a0       0x20 kernel/mips32/interrupt.mips32.o
  .debug_aranges
-                0x00000000000003c0       0x20 vm/mips32/mm_virt.mips32.o
+                0x00000000000003c0       0x20 kernel/mips32/exception.mips32.o
  .debug_aranges
-                0x00000000000003e0       0x20 vm/mips32/tlb.mips32.o
+                0x00000000000003e0       0x20 vm/mips32/mm_virt.mips32.o
  .debug_aranges
-                0x0000000000000400       0x20 vm/mips32/mm_phys.mips32.o
+                0x0000000000000400       0x20 vm/mips32/tlb.mips32.o
  .debug_aranges
-                0x0000000000000420       0x20 drivers/mips32/disk.mips32.o
+                0x0000000000000420       0x20 vm/mips32/mm_phys.mips32.o
  .debug_aranges
-                0x0000000000000440       0x20 drivers/mips32/metadev.mips32.o
+                0x0000000000000440       0x20 drivers/mips32/disk.mips32.o
  .debug_aranges
-                0x0000000000000460       0x20 drivers/mips32/polltty.mips32.o
+                0x0000000000000460       0x20 drivers/mips32/metadev.mips32.o
  .debug_aranges
-                0x0000000000000480       0x20 drivers/mips32/tty.mips32.o
+                0x0000000000000480       0x20 drivers/mips32/polltty.mips32.o
  .debug_aranges
-                0x00000000000004a0       0x20 drivers/mips32/device.mips32.o
+                0x00000000000004a0       0x20 drivers/mips32/tty.mips32.o
  .debug_aranges
-                0x00000000000004c0       0x18 drivers/mips32/drivers.mips32.o
+                0x00000000000004c0       0x20 drivers/mips32/device.mips32.o
  .debug_aranges
-                0x00000000000004d8       0x20 proc/mips32/exception.mips32.o
+                0x00000000000004e0       0x18 drivers/mips32/drivers.mips32.o
  .debug_aranges
-                0x00000000000004f8       0x20 proc/mips32/_syscall.mips32.o
+                0x00000000000004f8       0x20 proc/mips32/exception.mips32.o
  .debug_aranges
-                0x0000000000000518       0x20 proc/mips32/_proc.mips32.o
+                0x0000000000000518       0x20 proc/mips32/_syscall.mips32.o
+ .debug_aranges
+                0x0000000000000538       0x20 proc/mips32/_proc.mips32.o
 
-.debug_ranges   0x0000000000000000      0x448
+.debug_ranges   0x0000000000000000      0x438
  .debug_ranges  0x0000000000000000       0x20 init/common.mips32.o
  .debug_ranges  0x0000000000000020       0x18 kernel/thread.mips32.o
  .debug_ranges  0x0000000000000038       0x20 kernel/scheduler.mips32.o
  .debug_ranges  0x0000000000000058      0x108 lib/xprintf.mips32.o
- .debug_ranges  0x0000000000000160       0x10 proc/syscall.mips32.o
- .debug_ranges  0x0000000000000170       0xa0 proc/process.mips32.o
- .debug_ranges  0x0000000000000210       0xe8 fs/vfs.mips32.o
- .debug_ranges  0x00000000000002f8       0x48 fs/filesystems.mips32.o
- .debug_ranges  0x0000000000000340       0x40 lib/gcc/qdivrem.mips32.o
- .debug_ranges  0x0000000000000380       0x40 vm/memory.mips32.o
- .debug_ranges  0x00000000000003c0       0x18 vm/mips32/mm_virt.mips32.o
- .debug_ranges  0x00000000000003d8       0x18 drivers/mips32/disk.mips32.o
- .debug_ranges  0x00000000000003f0       0x40 drivers/mips32/tty.mips32.o
- .debug_ranges  0x0000000000000430       0x18 drivers/mips32/device.mips32.o
+ .debug_ranges  0x0000000000000160       0xa0 proc/process.mips32.o
+ .debug_ranges  0x0000000000000200       0xe8 fs/vfs.mips32.o
+ .debug_ranges  0x00000000000002e8       0x48 fs/filesystems.mips32.o
+ .debug_ranges  0x0000000000000330       0x40 lib/gcc/qdivrem.mips32.o
+ .debug_ranges  0x0000000000000370       0x40 vm/memory.mips32.o
+ .debug_ranges  0x00000000000003b0       0x18 vm/mips32/mm_virt.mips32.o
+ .debug_ranges  0x00000000000003c8       0x18 drivers/mips32/disk.mips32.o
+ .debug_ranges  0x00000000000003e0       0x40 drivers/mips32/tty.mips32.o
+ .debug_ranges  0x0000000000000420       0x18 drivers/mips32/device.mips32.o
 
-.debug_line     0x0000000000000000     0x398c
+.debug_line     0x0000000000000000     0x3a79
  .debug_line    0x0000000000000000      0x14c init/common.mips32.o
  .debug_line    0x000000000000014c       0x84 kernel/panic.mips32.o
  .debug_line    0x00000000000001d0      0x1f3 kernel/thread.mips32.o
@@ -1176,34 +1199,35 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_line    0x0000000000001113       0xa6 drivers/disksched.mips32.o
  .debug_line    0x00000000000011b9       0x8e drivers/timer.mips32.o
  .debug_line    0x0000000000001247      0x14d proc/elf.mips32.o
- .debug_line    0x0000000000001394       0xaf proc/syscall.mips32.o
- .debug_line    0x0000000000001443      0x2ec proc/process.mips32.o
- .debug_line    0x000000000000172f      0x491 fs/vfs.mips32.o
- .debug_line    0x0000000000001bc0      0x4cf fs/tfs.mips32.o
- .debug_line    0x000000000000208f      0x1d6 fs/filesystems.mips32.o
- .debug_line    0x0000000000002265       0x65 lib/gcc/divdi3.mips32.o
- .debug_line    0x00000000000022ca      0x176 lib/gcc/qdivrem.mips32.o
- .debug_line    0x0000000000002440       0x59 lib/gcc/udivdi3.mips32.o
- .debug_line    0x0000000000002499       0x59 lib/gcc/umoddi3.mips32.o
- .debug_line    0x00000000000024f2       0xd8 vm/memory.mips32.o
- .debug_line    0x00000000000025ca      0x173 init/mips32/main.mips32.o
- .debug_line    0x000000000000273d       0x8d kernel/mips32/cswitch.mips32.o
- .debug_line    0x00000000000027ca      0x1d2 kernel/mips32/interrupt.mips32.o
- .debug_line    0x000000000000299c      0x105 kernel/mips32/exception.mips32.o
- .debug_line    0x0000000000002aa1      0x1c5 vm/mips32/mm_virt.mips32.o
- .debug_line    0x0000000000002c66       0xad vm/mips32/tlb.mips32.o
- .debug_line    0x0000000000002d13      0x180 vm/mips32/mm_phys.mips32.o
- .debug_line    0x0000000000002e93      0x23c drivers/mips32/disk.mips32.o
- .debug_line    0x00000000000030cf      0x1cd drivers/mips32/metadev.mips32.o
- .debug_line    0x000000000000329c       0xb0 drivers/mips32/polltty.mips32.o
- .debug_line    0x000000000000334c      0x220 drivers/mips32/tty.mips32.o
- .debug_line    0x000000000000356c      0x113 drivers/mips32/device.mips32.o
- .debug_line    0x000000000000367f       0x8f drivers/mips32/drivers.mips32.o
- .debug_line    0x000000000000370e      0x130 proc/mips32/exception.mips32.o
- .debug_line    0x000000000000383e       0x98 proc/mips32/_syscall.mips32.o
- .debug_line    0x00000000000038d6       0xb6 proc/mips32/_proc.mips32.o
+ .debug_line    0x0000000000001394       0xde proc/syscall.mips32.o
+ .debug_line    0x0000000000001472      0x2ec proc/process.mips32.o
+ .debug_line    0x000000000000175e       0xbe proc/usr_sem.mips32.o
+ .debug_line    0x000000000000181c      0x491 fs/vfs.mips32.o
+ .debug_line    0x0000000000001cad      0x4cf fs/tfs.mips32.o
+ .debug_line    0x000000000000217c      0x1d6 fs/filesystems.mips32.o
+ .debug_line    0x0000000000002352       0x65 lib/gcc/divdi3.mips32.o
+ .debug_line    0x00000000000023b7      0x176 lib/gcc/qdivrem.mips32.o
+ .debug_line    0x000000000000252d       0x59 lib/gcc/udivdi3.mips32.o
+ .debug_line    0x0000000000002586       0x59 lib/gcc/umoddi3.mips32.o
+ .debug_line    0x00000000000025df       0xd8 vm/memory.mips32.o
+ .debug_line    0x00000000000026b7      0x173 init/mips32/main.mips32.o
+ .debug_line    0x000000000000282a       0x8d kernel/mips32/cswitch.mips32.o
+ .debug_line    0x00000000000028b7      0x1d2 kernel/mips32/interrupt.mips32.o
+ .debug_line    0x0000000000002a89      0x105 kernel/mips32/exception.mips32.o
+ .debug_line    0x0000000000002b8e      0x1c5 vm/mips32/mm_virt.mips32.o
+ .debug_line    0x0000000000002d53       0xad vm/mips32/tlb.mips32.o
+ .debug_line    0x0000000000002e00      0x180 vm/mips32/mm_phys.mips32.o
+ .debug_line    0x0000000000002f80      0x23c drivers/mips32/disk.mips32.o
+ .debug_line    0x00000000000031bc      0x1cd drivers/mips32/metadev.mips32.o
+ .debug_line    0x0000000000003389       0xb0 drivers/mips32/polltty.mips32.o
+ .debug_line    0x0000000000003439      0x220 drivers/mips32/tty.mips32.o
+ .debug_line    0x0000000000003659      0x113 drivers/mips32/device.mips32.o
+ .debug_line    0x000000000000376c       0x8f drivers/mips32/drivers.mips32.o
+ .debug_line    0x00000000000037fb      0x130 proc/mips32/exception.mips32.o
+ .debug_line    0x000000000000392b       0x98 proc/mips32/_syscall.mips32.o
+ .debug_line    0x00000000000039c3       0xb6 proc/mips32/_proc.mips32.o
 
-.debug_str      0x0000000000000000     0x1c24
+.debug_str      0x0000000000000000     0x1ca1
  .debug_str     0x0000000000000000      0x1d2 init/common.mips32.o
                                         0x219 (size before relaxing)
  .debug_str     0x00000000000001d2       0x45 kernel/panic.mips32.o
@@ -1236,60 +1260,62 @@ OUTPUT(kudos-mips32 elf32-bigmips)
                                         0x14d (size before relaxing)
  .debug_str     0x0000000000000b63      0x1eb proc/elf.mips32.o
                                         0x2e2 (size before relaxing)
- .debug_str     0x0000000000000d4e       0x7d proc/syscall.mips32.o
-                                        0x16b (size before relaxing)
- .debug_str     0x0000000000000dcb      0x16c proc/process.mips32.o
+ .debug_str     0x0000000000000d4e       0xc3 proc/syscall.mips32.o
+                                        0x1c1 (size before relaxing)
+ .debug_str     0x0000000000000e11      0x16c proc/process.mips32.o
                                         0x66e (size before relaxing)
- .debug_str     0x0000000000000f37      0x1f2 fs/vfs.mips32.o
+ .debug_str     0x0000000000000f7d       0x37 proc/usr_sem.mips32.o
+                                        0x163 (size before relaxing)
+ .debug_str     0x0000000000000fb4      0x1f2 fs/vfs.mips32.o
                                         0x531 (size before relaxing)
- .debug_str     0x0000000000001129      0x10c fs/tfs.mips32.o
+ .debug_str     0x00000000000011a6      0x10c fs/tfs.mips32.o
                                         0x4fc (size before relaxing)
- .debug_str     0x0000000000001235      0x11d fs/filesystems.mips32.o
+ .debug_str     0x00000000000012b2      0x11d fs/filesystems.mips32.o
                                         0x47a (size before relaxing)
- .debug_str     0x0000000000001352       0x2d lib/gcc/divdi3.mips32.o
+ .debug_str     0x00000000000013cf       0x2d lib/gcc/divdi3.mips32.o
                                          0xbe (size before relaxing)
- .debug_str     0x000000000000137f       0x4f lib/gcc/qdivrem.mips32.o
+ .debug_str     0x00000000000013fc       0x4f lib/gcc/qdivrem.mips32.o
                                         0x106 (size before relaxing)
- .debug_str     0x00000000000013ce       0x1c lib/gcc/udivdi3.mips32.o
+ .debug_str     0x000000000000144b       0x1c lib/gcc/udivdi3.mips32.o
                                          0xb9 (size before relaxing)
- .debug_str     0x00000000000013ea       0x1c lib/gcc/umoddi3.mips32.o
+ .debug_str     0x0000000000001467       0x1c lib/gcc/umoddi3.mips32.o
                                          0xb9 (size before relaxing)
- .debug_str     0x0000000000001406       0x32 vm/memory.mips32.o
+ .debug_str     0x0000000000001483       0x32 vm/memory.mips32.o
                                         0x1d4 (size before relaxing)
- .debug_str     0x0000000000001438       0x9f init/mips32/main.mips32.o
+ .debug_str     0x00000000000014b5       0x9f init/mips32/main.mips32.o
                                         0x24c (size before relaxing)
- .debug_str     0x00000000000014d7       0x3c kernel/mips32/cswitch.mips32.o
+ .debug_str     0x0000000000001554       0x3c kernel/mips32/cswitch.mips32.o
                                         0x1a3 (size before relaxing)
- .debug_str     0x0000000000001513       0xd6 kernel/mips32/interrupt.mips32.o
+ .debug_str     0x0000000000001590       0xd6 kernel/mips32/interrupt.mips32.o
                                         0x31c (size before relaxing)
- .debug_str     0x00000000000015e9       0xaa kernel/mips32/exception.mips32.o
+ .debug_str     0x0000000000001666       0xaa kernel/mips32/exception.mips32.o
                                         0x1e5 (size before relaxing)
- .debug_str     0x0000000000001693       0x40 vm/mips32/mm_virt.mips32.o
+ .debug_str     0x0000000000001710       0x40 vm/mips32/mm_virt.mips32.o
                                         0x251 (size before relaxing)
- .debug_str     0x00000000000016d3       0x79 vm/mips32/tlb.mips32.o
+ .debug_str     0x0000000000001750       0x79 vm/mips32/tlb.mips32.o
                                         0x1cc (size before relaxing)
- .debug_str     0x000000000000174c       0xe3 vm/mips32/mm_phys.mips32.o
+ .debug_str     0x00000000000017c9       0xe3 vm/mips32/mm_phys.mips32.o
                                         0x324 (size before relaxing)
- .debug_str     0x000000000000182f      0x109 drivers/mips32/disk.mips32.o
+ .debug_str     0x00000000000018ac      0x109 drivers/mips32/disk.mips32.o
                                         0x466 (size before relaxing)
- .debug_str     0x0000000000001938      0x122 drivers/mips32/metadev.mips32.o
+ .debug_str     0x00000000000019b5      0x122 drivers/mips32/metadev.mips32.o
                                         0x38e (size before relaxing)
- .debug_str     0x0000000000001a5a       0x36 drivers/mips32/polltty.mips32.o
+ .debug_str     0x0000000000001ad7       0x36 drivers/mips32/polltty.mips32.o
                                         0x18f (size before relaxing)
- .debug_str     0x0000000000001a90       0x8f drivers/mips32/tty.mips32.o
+ .debug_str     0x0000000000001b0d       0x8f drivers/mips32/tty.mips32.o
                                         0x33e (size before relaxing)
- .debug_str     0x0000000000001b1f       0x7b drivers/mips32/device.mips32.o
+ .debug_str     0x0000000000001b9c       0x7b drivers/mips32/device.mips32.o
                                         0x1f0 (size before relaxing)
- .debug_str     0x0000000000001b9a       0x19 drivers/mips32/drivers.mips32.o
+ .debug_str     0x0000000000001c17       0x19 drivers/mips32/drivers.mips32.o
                                         0x1a0 (size before relaxing)
- .debug_str     0x0000000000001bb3       0x46 proc/mips32/exception.mips32.o
+ .debug_str     0x0000000000001c30       0x46 proc/mips32/exception.mips32.o
                                         0x32b (size before relaxing)
- .debug_str     0x0000000000001bf9       0x17 proc/mips32/_syscall.mips32.o
+ .debug_str     0x0000000000001c76       0x17 proc/mips32/_syscall.mips32.o
                                         0x132 (size before relaxing)
- .debug_str     0x0000000000001c10       0x14 proc/mips32/_proc.mips32.o
+ .debug_str     0x0000000000001c8d       0x14 proc/mips32/_proc.mips32.o
                                         0x1bb (size before relaxing)
 
-.debug_frame    0x0000000000000000     0x1a88
+.debug_frame    0x0000000000000000     0x1b10
  .debug_frame   0x0000000000000000       0x60 init/common.mips32.o
  .debug_frame   0x0000000000000060       0x38 kernel/panic.mips32.o
  .debug_frame   0x0000000000000098      0x138 kernel/thread.mips32.o
@@ -1306,31 +1332,32 @@ OUTPUT(kudos-mips32 elf32-bigmips)
  .debug_frame   0x000000000000083c       0x20 drivers/disksched.mips32.o
  .debug_frame   0x000000000000085c       0x30 drivers/timer.mips32.o
  .debug_frame   0x000000000000088c       0x48 proc/elf.mips32.o
- .debug_frame   0x00000000000008d4       0x4c proc/syscall.mips32.o
- .debug_frame   0x0000000000000920      0x158 proc/process.mips32.o
- .debug_frame   0x0000000000000a78      0x378 fs/vfs.mips32.o
- .debug_frame   0x0000000000000df0      0x208 fs/tfs.mips32.o
- .debug_frame   0x0000000000000ff8       0xb0 fs/filesystems.mips32.o
- .debug_frame   0x00000000000010a8       0x34 lib/gcc/divdi3.mips32.o
- .debug_frame   0x00000000000010dc       0x60 lib/gcc/qdivrem.mips32.o
- .debug_frame   0x000000000000113c       0x2c lib/gcc/udivdi3.mips32.o
- .debug_frame   0x0000000000001168       0x2c lib/gcc/umoddi3.mips32.o
- .debug_frame   0x0000000000001194       0x48 vm/memory.mips32.o
- .debug_frame   0x00000000000011dc       0x38 init/mips32/main.mips32.o
- .debug_frame   0x0000000000001214       0x60 kernel/mips32/cswitch.mips32.o
- .debug_frame   0x0000000000001274       0xb8 kernel/mips32/interrupt.mips32.o
- .debug_frame   0x000000000000132c       0x50 kernel/mips32/exception.mips32.o
- .debug_frame   0x000000000000137c      0x114 vm/mips32/mm_virt.mips32.o
- .debug_frame   0x0000000000001490       0x6c vm/mips32/tlb.mips32.o
- .debug_frame   0x00000000000014fc       0xd4 vm/mips32/mm_phys.mips32.o
- .debug_frame   0x00000000000015d0      0x140 drivers/mips32/disk.mips32.o
- .debug_frame   0x0000000000001710      0x178 drivers/mips32/metadev.mips32.o
- .debug_frame   0x0000000000001888       0x40 drivers/mips32/polltty.mips32.o
- .debug_frame   0x00000000000018c8       0xd8 drivers/mips32/tty.mips32.o
- .debug_frame   0x00000000000019a0       0x54 drivers/mips32/device.mips32.o
- .debug_frame   0x00000000000019f4       0x34 proc/mips32/exception.mips32.o
- .debug_frame   0x0000000000001a28       0x30 proc/mips32/_syscall.mips32.o
- .debug_frame   0x0000000000001a58       0x30 proc/mips32/_proc.mips32.o
+ .debug_frame   0x00000000000008d4       0x64 proc/syscall.mips32.o
+ .debug_frame   0x0000000000000938      0x158 proc/process.mips32.o
+ .debug_frame   0x0000000000000a90       0x70 proc/usr_sem.mips32.o
+ .debug_frame   0x0000000000000b00      0x378 fs/vfs.mips32.o
+ .debug_frame   0x0000000000000e78      0x208 fs/tfs.mips32.o
+ .debug_frame   0x0000000000001080       0xb0 fs/filesystems.mips32.o
+ .debug_frame   0x0000000000001130       0x34 lib/gcc/divdi3.mips32.o
+ .debug_frame   0x0000000000001164       0x60 lib/gcc/qdivrem.mips32.o
+ .debug_frame   0x00000000000011c4       0x2c lib/gcc/udivdi3.mips32.o
+ .debug_frame   0x00000000000011f0       0x2c lib/gcc/umoddi3.mips32.o
+ .debug_frame   0x000000000000121c       0x48 vm/memory.mips32.o
+ .debug_frame   0x0000000000001264       0x38 init/mips32/main.mips32.o
+ .debug_frame   0x000000000000129c       0x60 kernel/mips32/cswitch.mips32.o
+ .debug_frame   0x00000000000012fc       0xb8 kernel/mips32/interrupt.mips32.o
+ .debug_frame   0x00000000000013b4       0x50 kernel/mips32/exception.mips32.o
+ .debug_frame   0x0000000000001404      0x114 vm/mips32/mm_virt.mips32.o
+ .debug_frame   0x0000000000001518       0x6c vm/mips32/tlb.mips32.o
+ .debug_frame   0x0000000000001584       0xd4 vm/mips32/mm_phys.mips32.o
+ .debug_frame   0x0000000000001658      0x140 drivers/mips32/disk.mips32.o
+ .debug_frame   0x0000000000001798      0x178 drivers/mips32/metadev.mips32.o
+ .debug_frame   0x0000000000001910       0x40 drivers/mips32/polltty.mips32.o
+ .debug_frame   0x0000000000001950       0xd8 drivers/mips32/tty.mips32.o
+ .debug_frame   0x0000000000001a28       0x54 drivers/mips32/device.mips32.o
+ .debug_frame   0x0000000000001a7c       0x34 proc/mips32/exception.mips32.o
+ .debug_frame   0x0000000000001ab0       0x30 proc/mips32/_syscall.mips32.o
+ .debug_frame   0x0000000000001ae0       0x30 proc/mips32/_proc.mips32.o
 
 .stab           0x0000000000000000     0x1560
  .stab          0x0000000000000000       0xfc init/mips32/_boot.mips32.o
@@ -1640,6 +1667,7 @@ scheduler_init                                    kernel/scheduler.mips32.o
                                                   init/mips32/main.mips32.o
 scheduler_schedule                                kernel/scheduler.mips32.o
                                                   kernel/mips32/interrupt.mips32.o
+sem_table_slock                                   proc/usr_sem.mips32.o
 semaphore_P                                       kernel/semaphore.mips32.o
                                                   drivers/mips32/disk.mips32.o
                                                   fs/tfs.mips32.o
@@ -1716,6 +1744,7 @@ stalloc_init                                      kernel/stalloc.mips32.o
 stringcmp                                         lib/libc.mips32.o
                                                   fs/tfs.mips32.o
                                                   fs/vfs.mips32.o
+                                                  proc/usr_sem.mips32.o
 stringcopy                                        lib/libc.mips32.o
                                                   fs/tfs.mips32.o
                                                   fs/vfs.mips32.o
@@ -1789,6 +1818,14 @@ tty_init                                          drivers/mips32/tty.mips32.o
 tty_interrupt_handle                              drivers/mips32/tty.mips32.o
 user_exception_handle                             proc/mips32/exception.mips32.o
                                                   kernel/mips32/_cswitch.mips32.o
+usr_sem_destroy                                   proc/usr_sem.mips32.o
+                                                  proc/syscall.mips32.o
+usr_sem_open                                      proc/usr_sem.mips32.o
+                                                  proc/syscall.mips32.o
+usr_sem_procure                                   proc/usr_sem.mips32.o
+                                                  proc/syscall.mips32.o
+usr_sem_vacate                                    proc/usr_sem.mips32.o
+                                                  proc/syscall.mips32.o
 vfs_close                                         fs/vfs.mips32.o
 vfs_create                                        fs/vfs.mips32.o
 vfs_deinit                                        fs/vfs.mips32.o

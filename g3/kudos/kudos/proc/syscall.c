@@ -9,6 +9,7 @@
 #include "kernel/assert.h"
 #include "vm/memory.h"
 #include "proc/process.h"
+#include "proc/usr_sem.h"
 
 /**
  * Handle system calls. Interrupts are enabled when this function is
@@ -46,6 +47,18 @@ uintptr_t syscall_entry(uintptr_t syscall,
     break;
   case SYSCALL_EXIT:
     process_exit_silly();
+    break;
+  case SYSCALL_USR_SEM_OPEN:
+    usr_sem_open((const char*) arg0, (int) arg1);
+    break;
+  case SYSCALL_USR_SEM_DESTROY:
+    usr_sem_destroy((usr_sem_t*) arg0);
+    break;
+  case SYSCALL_USR_SEM_PROCURE:
+    usr_sem_procure((usr_sem_t*) arg0);
+    break;
+  case SYSCALL_USR_SEM_VACATE:
+    usr_sem_vacate((usr_sem_t*) arg0);
     break;
   default:
     KERNEL_PANIC("Unhandled system call\n");
