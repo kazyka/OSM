@@ -6,7 +6,7 @@
 #include "kernel/interrupt.h"
 #include <exception.h>
 #include "lib/libc.h"
-#include <tlb.h>
+#include "vm/mips32/tlb.h"
 
 /**
    Prints failed virtual addresses when TLB exception occurs. This
@@ -47,18 +47,21 @@ void kernel_exception_handle(int exception)
   /* Clear EXL to make normal interrupt disable/enable work. */
   _interrupt_clear_EXL();
 
+  // Flag to signal exception in kernel
+  static int exception_kernel = 1;
+
   switch(exception) {
   case EXCEPTION_TLBM:
     print_tlb_debug();
-    KERNEL_PANIC("TLB Modification: not handled yet");
+    tlb_modified_exception(exception_kernel);
     break;
   case EXCEPTION_TLBL:
     print_tlb_debug();
-    KERNEL_PANIC("TLB Load: not handled yet");
+    tlb_load_exception(exception_kernel);
     break;
   case EXCEPTION_TLBS:
-    print_tlb_debug();
-    KERNEL_PANIC("TLB Store: not handled yet");
+    print_tlb_debug();;
+    tlb_store_exception(exception_kernel);
     break;
   case EXCEPTION_ADDRL:
     print_tlb_debug();
