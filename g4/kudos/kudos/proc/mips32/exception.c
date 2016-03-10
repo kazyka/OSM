@@ -36,15 +36,18 @@ void user_exception_handle(int exception)
   my_entry= thread_get_current_thread_entry();
   my_entry->user_context = my_entry->context;
 
+  // Flag to signal exception in userland
+  static int exception_userland = 0;
+
   switch(exception) {
   case EXCEPTION_TLBM:
-    KERNEL_PANIC("TLB Modification: not handled yet");
+    tlb_modified_exception(exception_userland);
     break;
   case EXCEPTION_TLBL:
-    KERNEL_PANIC("TLB Load: not handled yet");
+    tlb_load_exception(exception_userland);
     break;
   case EXCEPTION_TLBS:
-    KERNEL_PANIC("TLB Store: not handled yet");
+    tlb_store_exception(exception_userland);
     break;
   case EXCEPTION_ADDRL:
     KERNEL_PANIC("Address Error Load: not handled yet");
