@@ -50,7 +50,6 @@ void tlb_modified_exception(int exception_origin)
 
 void tlb_load_exception(int exception_origin)
 {
-  kprintf("TLB Load started\n");
   int search_pagetable_result, entry_index;
   pagetable_t* pagetable = thread_get_current_thread_entry()->pagetable;
 
