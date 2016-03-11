@@ -57,8 +57,6 @@ void tlb_load_exception(int exception_origin)
   search_pagetable_result = search_pagetable(pagetable,&entry_index);
   int dummy_val = 3;
 
-  kprintf("Search pagetable yielded result: %d\n", search_pagetable_result);
-
   if (search_pagetable_result == 0) {
     tlb_entry_t entry = pagetable->entries[entry_index];
     _tlb_write_random(&entry);
