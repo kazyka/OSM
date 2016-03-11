@@ -10,6 +10,11 @@
 #include "vm/memory.h"
 #include "drivers/polltty.h"
 #include "proc/process.h"
+#include "kernel/thread.h"
+#include "vm/memory.h"
+#include <arch.h>
+
+#define PAGE_SIZE 4096
 
 int syscall_write(const char *buffer, int length) {
   /* Not a G1 solution! */
@@ -21,6 +26,40 @@ int syscall_read(char *buffer) {
   /* Not a G1 solution! */
   *buffer = polltty_getchar();
   return 1;
+}
+
+void* syscall_memlimit(void* new_end){
+
+  void* heap_end = process_get_current_process_entry()->heap_end;
+  pagetable_t* pagetable = thread_get_current_thread_entry()->pagetable;
+
+  // Return the current heap_end if new_end is NULL
+  // OR if heap_end is greater than or equal to new_end
+  // (trying to shrink the heap)
+
+  if (new_end == NULL || heap_end >= new_end){
+    return heap_end;
+  }
+
+  int number_of_pages = ((int) new_end -(int) heap_end) / PAGE_SIZE + 1;
+
+  for (int i = 0; i < number_of_pages; ++i){
+    uint32_t vaddr = ((int) heap_end) + PAGE_SIZE * (i + 1);
+    uintptr_t phys_page = physmem_allocblock();
+    KERNEL_ASSERT(phys_page != 0);
+
+    // Zero the page
+    memoryset((void*)ADDR_PHYS_TO_KERNEL(phys_page), 0, PAGE_SIZE);
+
+    vm_map(pagetable, phys_page, vaddr, 1);
+  }
+
+
+  // Update the current heap_end to new_end
+
+  heap_end = new_end;
+
+  return heap_end;
 }
 
 /**
@@ -60,6 +99,9 @@ uintptr_t syscall_entry(uintptr_t syscall,
     break;
   case SYSCALL_JOIN:
     return process_join((process_id_t) arg0);
+    break;
+  case SYSCALL_MEMLIMIT:
+    syscall_memlimit((void *) arg0);
     break;
   default:
     KERNEL_PANIC("Unhandled system call\n");
