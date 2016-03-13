@@ -1,12 +1,11 @@
 #include <stdio.h>  // printf, scanf, stdin
 #include <ctype.h>  // isspace
+#include "queue.h"  // Queue struct
 
-#include "queue.h"
+struct queue queue;
+int pri_ptr;
 
-static struct queue queue;
-
-static inline char
-skip_spaces() {
+static inline char skip_spaces() {
   char c;
 
   do {
@@ -16,8 +15,7 @@ skip_spaces() {
   return c;
 }
 
-static inline void
-skip_until_space() {
+static inline void skip_until_space() {
   char c;
 
   do {
@@ -25,8 +23,7 @@ skip_until_space() {
   } while (!(isspace(c) || c == EOF));
 }
 
-void
-loop() {
+void loop() {
   char op = 0;
   int pri = 0;
 
@@ -40,17 +37,31 @@ loop() {
       break;
 
     case 'p':
-      if (queue_pop(&queue, &pri) != 0) {
+      // Pop an element off of the queue.
+      if (queue_pop(&queue, &pri_ptr) != 0) {
         printf("!! Queue underflow.\n");
       } else {
-        printf("=> %d\n", pri);
+        printf("=> %d\n", pri_ptr);
       }
       break;
+
+    case 'e': // Manual exit command
+       return;
+       break;
+
+    case 'q': // Got annoyed of accidentally typing q instead
+              // of e so added support for both
+       return;
+       break;
 
     default:
       ungetc(op, stdin);
       if (scanf("%d", &pri) == 1) {
-        if (queue_push(&queue, pri) != 0) {
+        // Push the object
+
+        queue_push(&queue, pri);
+        if (0) {
+          // TODO: Try to insert the read priority into the queue.
           printf("!! Queue overflow.\n");
         }
       } else {
@@ -61,16 +72,17 @@ loop() {
   }
 }
 
-void
-shutdown() {
-  int pri;
+void shutdown() {
+  // Pop everything off of the queue.
+  int pri_ptr2;
 
-  while (queue_pop(&queue, &pri) == 0)
-    ;
+  while (queue.count > 0){
+     queue_pop(&queue, &pri_ptr2);
+     queue.count = queue.count - 1;
+  }
 }
 
-int
-main() {
+int main() {
   queue_init(&queue);
 
   loop();
@@ -79,5 +91,7 @@ main() {
 
   queue_destroy(&queue);
 
+
   return 0;
 }
+
