@@ -8,9 +8,6 @@
 #define GROWTH_FACTOR   2
 #define SHRINK_FACTOR   4
 
-pthread_mutex_t mutex;
-pthread_cond_t cond;
-
 // All of the below functions assume that q is not NULL.
 
 static inline size_t
@@ -62,10 +59,10 @@ queue_heap_down(struct node *array, size_t count, size_t i) {
 int
 queue_init(struct queue *q) {
   /* FIXME: Make this function also initialize the pthread objects. */
-  pthread_mutex_init(&mutex, NULL);
-  pthread_cond_init(&cond, NULL);
+  pthread_mutex_init(&(q->mutex), NULL);
+  pthread_cond_init(&(q->cond), NULL);
 
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&(q->mutex));
 
   q->root = (struct node *)malloc(
     sizeof(struct node) * INIT_SIZE);
@@ -73,7 +70,7 @@ queue_init(struct queue *q) {
   q->count = 0;
   q->size = INIT_SIZE;
 
-  pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&(q->mutex));
 
   return 0;
 }
@@ -99,7 +96,7 @@ queue_grow(struct queue *q) {
 int
 queue_push(struct queue *q, int pri) {
   /* FIXME: Make this function thread-safe. */
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&(q->mutex));
 
   printf("start-push\n");
   int retval;
@@ -114,10 +111,10 @@ queue_push(struct queue *q, int pri) {
 
   queue_heap_up(q->root, q->count);
   q->count++;
-  pthread_cond_signal(&cond);
+  pthread_cond_signal(&(q->cond));
   printf("end-push\n");
 
-  pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&(q->mutex));
   return 0;
 }
 
@@ -125,11 +122,11 @@ int
 queue_pop(struct queue *q, int *pri_ptr) {
   /* FIXME: Make this function thread-safe.  Also, if the queue is empty on pop,
      block until something is pushed. */
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&(q->mutex));
 
   printf("start-pop\n");
   while (q->count == 0) {
-    pthread_cond_wait(&cond, &mutex);
+    pthread_cond_wait(&(q->cond), &(q->mutex));
   }
   *pri_ptr = q->root->pri;
 
@@ -140,14 +137,14 @@ queue_pop(struct queue *q, int *pri_ptr) {
   queue_heap_down(q->root, q->count, 0);
 
   printf("POP!\n");
-  pthread_mutex_unlock(&mutex);
+  pthread_mutex_unlock(&(q->mutex));
   return 0;
 }
 
 int
 queue_destroy(struct queue *q) {
   free(q->root);
-  pthread_mutex_destroy(&mutex);
-  pthread_cond_destroy(&cond);
+  pthread_mutex_destroy(&(q->mutex));
+  pthread_cond_destroy(&(q->cond));
   return 0;
 }
